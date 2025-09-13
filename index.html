@@ -22,6 +22,7 @@
     html,body{height:100%}
     body{margin:0; background:var(--bg); color:var(--paper); font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
 
+    /* Topbar */
     .topbar{
       position:sticky; top:0; z-index:50; height:var(--top);
       display:flex; align-items:center; gap:10px; padding:10px 12px;
@@ -32,15 +33,14 @@
     .pill{display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 12px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.08); cursor:pointer; font-weight:700;}
     .pill.yellow{background:var(--brand); color:#111; border-color:rgba(0,0,0,.2); font-family:"Russo One"; text-transform:uppercase;}
     .grow{flex:1}
-    .tabs{display:flex; gap:8px}
 
     .container{max-width:1200px; margin:12px auto; padding:0 12px;}
     .panel{background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:12px; box-shadow:0 20px 40px rgba(0,0,0,.45); backdrop-filter:saturate(130%) blur(8px);}
 
+    /* Filters */
     .filters{display:grid; grid-template-columns:repeat(6,1fr); gap:10px;}
     @media (max-width:1024px){ .filters{grid-template-columns:repeat(3,1fr);} }
     @media (max-width:640px){ .filters{grid-template-columns:1fr 1fr;} }
-
     label{font-size:12px; font-weight:800; opacity:.92; display:block; margin:0 0 6px;}
     .input,.select{
       width:100%; height:46px; border-radius:12px; border:1px solid var(--field-br);
@@ -53,21 +53,27 @@
     .btn:active{transform:translateY(2px); background:var(--brand-press); box-shadow:0 4px 0 rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.18);}
     .btn.ghost{background:rgba(255,255,255,.1); color:#fff;}
 
+    /* Results */
     .topline{display:flex; align-items:center; gap:10px; margin:14px 0;}
     .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
-    @media (max-width:1024px){ .grid{grid-template-columns:repeat(2,1,); grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:1024px){ .grid{grid-template-columns:repeat(2,1fr);} }
     @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
 
-    .card{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:14px; overflow:hidden; display:flex; flex-direction:column;}
+    .card{
+      background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+      display:flex; flex-direction:column; cursor:pointer;
+      transition:transform .08s ease, box-shadow .08s ease;
+    }
+    .card:active{transform:translateY(1px); box-shadow:0 10px 22px rgba(0,0,0,.35)}
     .thumb{position:relative; padding-top:62%; background:#0b3a8a; overflow:hidden;}
     .thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
-    .price{position:absolute; left:8px; bottom:8px; background:var(--brand); color:#111; border-radius:10px; padding:6px 10px; font:700 14px/1 "Russo One";}
+    .badge{position:absolute; left:8px; bottom:8px; background:var(--brand); color:#111; border-radius:10px; padding:6px 10px; font:700 14px/1 "Russo One";}
+    .views{position:absolute; right:8px; bottom:8px; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.25); color:#fff; border-radius:10px; padding:5px 8px; font-weight:700; font-size:12px}
     .body{padding:10px; display:flex; flex-direction:column; gap:6px}
     .title{font:700 16px/1.2 "Russo One"; letter-spacing:.4px}
     .meta{font-size:13px; opacity:.95}
-    .card .row{display:flex; gap:8px; margin-top:8px}
-    .mini{height:38px; line-height:38px; border-radius:12px; padding:0 12px; font:700 13px/38px "Russo One";}
 
+    /* Detail */
     .detail{position:fixed; inset:0; z-index:60; display:none; background:rgba(0,0,0,.5);}
     .detail.active{display:block;}
     .sheet{position:absolute; left:50%; top:6vh; transform:translateX(-50%); width:min(1080px,96vw); max-height:88vh; overflow:auto; background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:12px; box-shadow:0 20px 40px rgba(0,0,0,.6); backdrop-filter:saturate(130%) blur(8px);}
@@ -84,37 +90,14 @@
     .divider{height:1px; background:var(--line); margin:10px 0}
     .seller{display:flex; gap:10px; align-items:center}
     .avatar{width:44px; height:44px; border-radius:50%; background:#203157; display:flex; align-items:center; justify-content:center; font-weight:800}
-
-    .drawer{position:fixed; right:12px; top:calc(var(--top) + 10px); bottom:12px; width:min(380px,92vw); background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:12px; z-index:55; display:none; overflow:auto; box-shadow:0 20px 40px rgba(0,0,0,.45); backdrop-filter:saturate(130%) blur(8px);}
-    .drawer.active{display:block}
-    .item{border:1px solid var(--line); border-radius:12px; padding:8px; margin-bottom:8px; background:rgba(255,255,255,.06)}
-    .chat-row{display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px}
-    .small{font-size:12px; opacity:.85}
-
-    .form{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
-    @media (max-width:900px){ .form{grid-template-columns:1fr 1fr} }
-    @media (max-width:600px){ .form{grid-template-columns:1fr} }
-    .file{height:46px; border-radius:12px; border:1px solid var(--field-br); background:var(--field-bg); color:#fff; padding:8px 10px}
-
-    .muted{opacity:.85; font-size:13px}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="logo">AUTO 369°</div>
-    <div class="tabs">
-      <div class="pill yellow" id="tabSearch">Пошук</div>
-      <div class="pill" id="tabSell">Додати авто</div>
-      <div class="pill" id="tabFav">Обрані</div>
-      <div class="pill" id="tabCmp">Порівняння</div>
-      <div class="pill" id="tabChat">Чати</div>
-    </div>
+    <div class="pill yellow" id="tabSearch">Пошук</div>
+    <div class="pill" id="tabSell">Додати оголошення</div>
     <div class="grow"></div>
-    <div class="pill" id="regenBtn" title="Перегенерувати базу">Наповнити базу</div>
-    <label class="pill" style="cursor:pointer">
-      <input type="file" id="importJson" accept="application/json" style="display:none">
-      Імпорт JSON
-    </label>
   </header>
 
   <main class="container">
@@ -139,8 +122,7 @@
         <div><label>Колір</label><select class="select" id="fltColor"></select></div>
         <div><label>Потужність від, к.с.</label><input class="input" id="fltPowerMin" placeholder="0"></div>
         <div><label>Пошук (назва/VIN)</label><input class="input" id="fltQuery" placeholder="напр., Tesla, AA...VIN"></div>
-        <div class="check"><input type="checkbox" id="fltPhotoOnly"> <label for="fltPhotoOnly">Тільки з фото</label></div>
-        <div class="check"><input type="checkbox" id="fltRecent"> <label for="fltRecent">Оголошення за 30 днів</label></div>
+        <div class="check"><input type="checkbox" id="fltRecent"> <label for="fltRecent">За 30 днів</label></div>
       </div>
       <div class="actions">
         <button class="btn" id="btnApply">Знайти</button>
@@ -152,6 +134,7 @@
           <option value="yearDesc">Рік ↓</option>
           <option value="mileageAsc">Пробіг ↑</option>
           <option value="powerDesc">Потужність ↓</option>
+          <option value="viewsDesc">Перегляди ↓</option>
         </select>
       </div>
     </section>
@@ -160,18 +143,18 @@
     <section class="topline">
       <div id="resCount" class="muted">0 результатів</div>
       <div class="grow"></div>
-      <button class="btn mini" id="btnMore">Показати ще</button>
+      <button class="btn" id="btnMore">Показати ще</button>
     </section>
     <section class="grid" id="grid"></section>
 
-    <!-- ДОДАТИ АВТО -->
+    <!-- ДОДАТИ ОГОЛОШЕННЯ -->
     <section id="sellPanel" class="panel" style="display:none; margin-top:14px">
       <h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Додати оголошення</h3>
-      <div class="form">
+      <div class="filters" style="grid-template-columns:repeat(3,1fr)">
         <div><label>Місто</label><select class="select" id="sCity"></select></div>
         <div><label>Розділ</label><select class="select" id="sSection"></select></div>
         <div><label>Марка</label><select class="select" id="sBrand"></select></div>
-        <div><label>Модель</label><input class="input" id="sModel" placeholder="напр., Camry"></div>
+        <div><label>Модель</label><select class="select" id="sModel"></select></div>
         <div><label>Рік</label><input class="input" id="sYear" placeholder="2018"></div>
         <div><label>Пробіг, км</label><input class="input" id="sMileage" placeholder="95000"></div>
         <div><label>Паливо</label><select class="select" id="sFuel"></select></div>
@@ -183,20 +166,14 @@
         <div><label>Ціна, $</label><input class="input" id="sPrice" placeholder="13500"></div>
         <div><label>VIN (опц.)</label><input class="input" id="sVIN" placeholder="WAUZZZ..."></div>
         <div><label>Телефон</label><input class="input" id="sPhone" placeholder="+380..."></div>
-        <div><label>Фото (до 3)</label><input class="file" id="sPhotos" type="file" accept="image/*" multiple></div>
         <div style="grid-column:1/-1"><label>Опис</label><textarea class="input" id="sDesc" rows="3" style="height:auto; padding:10px" placeholder="Стан, комплектація... (мін. 20 символів)"></textarea></div>
       </div>
       <div class="actions">
         <button class="btn" id="sSave">Опублікувати</button>
-        <div class="muted">Антиспам: 1 оголошення / 60 сек; фото ≤ 2 МБ кожне.</div>
+        <div class="muted">Антиспам: 1 оголошення / 60 сек.</div>
       </div>
     </section>
   </main>
-
-  <!-- DRAWERS -->
-  <aside id="favDrawer" class="drawer"></aside>
-  <aside id="cmpDrawer" class="drawer"></aside>
-  <aside id="chatDrawer" class="drawer"></aside>
 
   <!-- DETAIL -->
   <div id="detail" class="detail">
@@ -204,7 +181,7 @@
       <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
         <div class="logo">AUTO 369°</div>
         <div class="grow"></div>
-        <button class="btn mini close" id="dClose">Закрити</button>
+        <button class="btn close" id="dClose" style="height:38px; line-height:38px; border-radius:12px; font:700 13px/38px 'Russo One'">Закрити</button>
       </div>
       <div id="dHeader" style="display:flex; align-items:center; gap:10px; margin-bottom:8px"></div>
       <div class="gal" id="dGal"></div>
@@ -214,22 +191,15 @@
       <div id="dDesc" class="muted"></div>
       <div class="divider"></div>
       <div class="seller" id="dSeller"></div>
-      <div class="actions" style="margin-top:10px">
-        <button class="btn" id="dChat">Написати продавцю</button>
-        <button class="btn ghost" id="dFav">В обрані</button>
-        <button class="btn ghost" id="dCmp">До порівняння</button>
-      </div>
     </div>
   </div>
 
   <script>
-  // ===== ШВИДКА ПРИМІТКА
-  // Цей застосунок НЕ копіює дані з auto.ria/RST. Він генерує 2000 реалістичних оголошень локально.
-  // Якщо маєш свій JSON з оголошеннями + картинками — імпортуй через кнопку «Імпорт JSON».
+  // ===== ВАЖЛИВО: ми не тягнемо реальні оголошення з інших сайтів (авторське право).
+  // Дані — синтетичні, 2000 шт. з реалістичними параметрами і зображеннями з loremflickr.
 
-  // ===== КОНСТАНТИ/СХОВИЩЕ =======================================================
   const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-  const DB_KEY="auto369_listings_big", FAV_KEY="auto369_fav_big", CMP_KEY="auto369_cmp_big", CHAT_KEY="auto369_chat_big", CTRL_KEY="auto369_ctrl_big";
+  const DB_KEY="auto369_listings_simple", CTRL_KEY="auto369_ctrl_simple";
 
   const DRIVE=["FWD","RWD","AWD"];
   const BODIES=["Седан","Хетчбек","Кросовер","Універсал","Мінівен","Купе","Пікап","Позашляховик"];
@@ -237,18 +207,15 @@
   const FUELS=["Бензин","Дизель","Гібрид","Електро","ГАЗ"];
   const GEARS=["Механіка","Автомат","Варіатор","Робот"];
   const SECTIONS=["Легкові","Кросовери","Електро","Вани/Мікроавтобуси"];
-  const YEARS=Array.from({length:26},(_,i)=>2000+i); // 2000..2025
+  const YEARS=Array.from({length:26},(_,i)=>2000+i);
 
-  // Великий список міст (облцентри + великі)
   const CITIES=[
     "Київ","Харків","Одеса","Дніпро","Львів","Запоріжжя","Кривий Ріг","Миколаїв","Вінниця","Херсон",
-    "Полтава","Чернігів","Черкаси","Суми","Житомир","Хмельницький","Чернівці","Рівне","Івано-Франківськ","Тернопіль",
-    "Луцьк","Ужгород","Кропивницький","Кам'янське","Кременчук","Біла Церква","Бровари","Бориспіль","Ірпінь","Буча",
-    "Обухів","Вишгород","Фастів","Бердянськ","Мелітополь","Краматорськ","Слов'янськ","Павлоград","Нікополь","Новомосковськ",
-    "Мукачево","Дрогобич","Стрий","Червоноград","Ковель","Калуш","Коломия","Умань","Бердичів","Коростень","Прилуки","Ніжин"
+    "Полтава","Чернігів","Черкаси","Суми","Житомир","Хмельницький","Чернівці","Рівне",
+    "Івано-Франківськ","Тернопіль","Луцьк","Ужгород","Кропивницький","Кам'янське","Кременчук",
+    "Біла Церква","Бровари","Бориспіль","Ірпінь","Буча"
   ];
 
-  // Розширений перелік брендів/моделей
   const BRANDS={
     "Toyota":["Corolla","Camry","RAV4","Land Cruiser","Yaris","Prius","Avensis"],
     "Volkswagen":["Golf","Passat","Tiguan","Polo","Touareg","Jetta","Transporter"],
@@ -277,49 +244,42 @@
     "Lexus":["IS","ES","RX","NX","UX"]
   };
 
-  // Зберігання
   const getDB=()=>{try{return JSON.parse(localStorage.getItem(DB_KEY)||"[]")}catch{return[]}};
   const setDB=v=>localStorage.setItem(DB_KEY,JSON.stringify(v));
-  const getFav=()=>{try{return JSON.parse(localStorage.getItem(FAV_KEY)||"[]")}catch{return[]}};
-  const setFav=v=>localStorage.setItem(FAV_KEY,JSON.stringify(v));
-  const getCmp=()=>{try{return JSON.parse(localStorage.getItem(CMP_KEY)||"[]")}catch{return[]}};
-  const setCmp=v=>localStorage.setItem(CMP_KEY,JSON.stringify(v));
-  const getChats=()=>{try{return JSON.parse(localStorage.getItem(CHAT_KEY)||"{}")}catch{return{}}};
-  const setChats=v=>localStorage.setItem(CHAT_KEY,JSON.stringify(v));
   const getCtrl=()=>{try{return JSON.parse(localStorage.getItem(CTRL_KEY)||"{}")}catch{return{}}};
   const setCtrl=v=>localStorage.setItem(CTRL_KEY,JSON.stringify(v));
 
   const uid=()=>Math.random().toString(16).slice(2)+Date.now().toString(16);
   const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
   const pick=a=>a[rand(0,a.length-1)];
-  const timeHM=()=>{const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
   const escapeHtml=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 
-  // ===== ЗОБРАЖЕННЯ: Canvas → PNG data: (працює у всіх, навіть з CSP)
+  // Фолбек-картинка через Canvas (якщо зовнішнє фото не завантажиться)
   function canvasPNG(title, colorIdx=0){
     const c=document.createElement('canvas'); c.width=800; c.height=500;
-    const g=c.getContext('2d');
-    const colors=["#0b3a8a","#11366b","#0d2b56","#14396e","#0c325e","#052547"];
+    const g=c.getContext('2d'); const colors=["#0b3a8a","#11366b","#0d2b56","#14396e","#0c325e","#052547"];
     g.fillStyle=colors[colorIdx%colors.length]; g.fillRect(0,0,c.width,c.height);
-    g.fillStyle="#ffd33b"; g.font="bold 48px 'Russo One', Arial"; g.textAlign="center";
-    g.fillText(title, 400, 260);
-    g.fillStyle="rgba(255,255,255,.8)"; g.font="20px 'Montserrat', Arial";
-    g.fillText("AUTO 369°", 400, 460);
+    g.fillStyle="#ffd33b"; g.font="bold 48px 'Russo One', Arial"; g.textAlign="center"; g.fillText(title, 400, 260);
+    g.fillStyle="rgba(255,255,255,.8)"; g.font="20px 'Montserrat', Arial"; g.fillText("AUTO 369°", 400, 460);
     return c.toDataURL("image/png");
   }
 
-  // ===== Генерація БД рівно на ~2000 записів =======================================
-  const TARGET_TOTAL = 2000;
+  // Отримати картинку з loremflickr (детерміновано по id)
+  function carPhotoURL(brand, model, seed){
+    const q = encodeURIComponent(`${brand},${model},car`);
+    return `https://loremflickr.com/800/500/${q}?lock=${seed}`;
+  }
 
+  // Генеруємо рівно 2000 оголошень
+  const TARGET_TOTAL=2000;
   function generateDB(){
-    const out=[];
-    const brands = Object.keys(BRANDS);
+    const out=[]; const brands=Object.keys(BRANDS);
     let i=0;
-    while(out.length < TARGET_TOTAL){
-      const city = CITIES[i % CITIES.length];
-      const section = SECTIONS[i % SECTIONS.length];
-      const brand = brands[i % brands.length];
-      const model = pick(BRANDS[brand]);
+    while(out.length<TARGET_TOTAL){
+      const city=CITIES[i%CITIES.length];
+      const section=SECTIONS[i%SECTIONS.length];
+      const brand=brands[i%brands.length];
+      const model=pick(BRANDS[brand]);
       const electric = section==="Електро" || brand==="Tesla" || model==="Leaf" || model==="Kona";
       const year = electric ? rand(2014,2025) : rand(2005,2025);
       const mileage = electric ? rand(0,180000) : rand(10000,350000);
@@ -328,13 +288,13 @@
       const power = electric ? rand(120,450) : rand(70,320);
       const priceBase = electric? 18000: 6000;
       const price = Math.max(2000, Math.round(priceBase + (2025-year)*500 + rand(-1500,7000)));
-      const id=uid();
+      const id=uid(), seed=(i*97)%100000;
       out.push({
         id, city, section, brand, model, year, mileage, fuel, gear,
         drive: pick(DRIVE), body: pick(BODIES), power, color: pick(COLORS),
         price, currency:"$", created: Date.now()-rand(0,60*86400*1000),
-        // динамічні PNG — генеруємо під час відмальовування (економимо місце у сховищі)
-        title:`${brand} ${model}`,
+        img: carPhotoURL(brand, model, seed), // легка URL-картинка
+        views: rand(100,500),
         vin: (Math.random()<.25?("UA"+rand(1000000,9999999)):""),
         seller:{ name: pick(["Олег","Ірина","Сергій","Анна","Віктор","Максим","Марія"])+" "+pick(["К.","Л.","М.","С.","Д."]), phone:"+380"+rand(500000000, 999999999)},
         desc: "Гарний стан, чесний пробіг. ТО вчасно. Деталі по телефону."
@@ -344,15 +304,13 @@
     setDB(out);
   }
 
-  // ініт БД
   if(getDB().length===0){ generateDB(); }
 
-  // ===== UI ІНІТ ===================================================================
+  // ===== UI ІНІТ
   const fltCity=$("#fltCity"), fltSection=$("#fltSection"), fltBrand=$("#fltBrand"), fltModel=$("#fltModel");
   const fltYearMin=$("#fltYearMin"), fltYearMax=$("#fltYearMax"), fltFuel=$("#fltFuel"), fltGear=$("#fltGear"),
         fltDrive=$("#fltDrive"), fltBody=$("#fltBody"), fltColor=$("#fltColor"),
-        fltPowerMin=$("#fltPowerMin"), fltQuery=$("#fltQuery"),
-        fltPhotoOnly=$("#fltPhotoOnly"), fltRecent=$("#fltRecent");
+        fltPowerMin=$("#fltPowerMin"), fltQuery=$("#fltQuery"), fltRecent=$("#fltRecent");
 
   function fillSelect(el, arr, withAll=true, allText="Будь-який"){
     el.innerHTML = (withAll?`<option value="">${allText}</option>`:'') + arr.map(x=>`<option value="${x}">${x}</option>`).join('');
@@ -365,13 +323,13 @@
   fillSelect(fltModel, []);
   fillSelect(fltYearMin, YEARS); fillSelect(fltYearMax, YEARS);
 
-  // Форма "Додати"
-  ["sCity","sSection","sFuel","sGear","sDrive","sBody","sColor","sBrand"].forEach((id)=>{
-    const map={sCity:CITIES,sSection:SECTIONS,sFuel:FUELS,sGear:GEARS,sDrive:DRIVE,sBody:BODIES,sColor:COLORS,sBrand:Object.keys(BRANDS)};
-    fillSelect($("#"+id), map[id], false);
-  });
+  // Форма "Додати" — лише селекти, модель залежить від марки
+  const mapSelectData={sCity:CITIES,sSection:SECTIONS,sFuel:FUELS,sGear:GEARS,sDrive:DRIVE,sBody:BODIES,sColor:COLORS,sBrand:Object.keys(BRANDS)};
+  Object.keys(mapSelectData).forEach(id=>fillSelect($("#"+id), mapSelectData[id], false));
+  fillSelect($("#sModel"), [], false);
+  $("#sBrand").addEventListener("change", ()=> fillSelect($("#sModel"), BRANDS[$("#sBrand").value]||[], false));
 
-  // ===== ПОШУК/РЕНДЕР ==============================================================
+  // ===== ПОШУК/РЕНДЕР
   const grid=$("#grid"), resCount=$("#resCount"), btnMore=$("#btnMore"), sortBy=$("#sortBy");
   let page=0, pageSize=24, lastResults=[];
 
@@ -402,8 +360,6 @@
       (!fltRecent.checked || (Date.now()-it.created)<=30*86400*1000)
     );
 
-    // "тільки з фото" — у нас завжди є зображення (canvasPNG), прапорець для сумісності інтерфейсу
-
     arr.sort((a,b)=>{
       switch(sortBy.value){
         case "priceAsc": return a.price-b.price;
@@ -411,6 +367,7 @@
         case "yearDesc": return b.year-a.year;
         case "mileageAsc": return a.mileage-b.mileage;
         case "powerDesc": return b.power-a.power;
+        case "viewsDesc": return b.views-a.views;
         default: return b.created-a.created;
       }
     });
@@ -419,6 +376,7 @@
     resCount.textContent=`${arr.length} результатів`;
     renderMore();
   }
+
   function renderMore(){
     const slice=lastResults.slice(page*pageSize,(page+1)*pageSize);
     slice.forEach(renderCard);
@@ -426,234 +384,115 @@
     btnMore.style.display = (page*pageSize < lastResults.length) ? "inline-block":"none";
   }
 
+  function imgWithFallback(src, alt, seed){
+    const el=document.createElement("img");
+    el.loading="lazy"; el.alt=alt; el.src=src;
+    el.onerror=()=>{ el.onerror=null; el.src=canvasPNG(alt, seed%6); };
+    return el;
+  }
+
   function renderCard(it){
-    const el=document.createElement('article'); el.className="card";
-    const img1 = canvasPNG(`${it.brand} ${it.model}`, (it.year+it.price)%6);
-    el.innerHTML=`
-      <div class="thumb">
-        <img src="${img1}" alt="${it.brand} ${it.model}" loading="lazy">
-        <div class="price">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>
-      </div>
-      <div class="body">
-        <div class="title">${it.brand} ${it.model} • ${it.year}</div>
-        <div class="meta">${it.city} • ${it.section}</div>
-        <div class="meta">${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.geар||it.gear}</div>
-        <div class="row">
-          <button class="btn mini" data-act="detail">Детальніше</button>
-          <button class="btn mini ghost" data-act="fav">${getFav().includes(it.id)?"У вибраному":"В обране"}</button>
-          <button class="btn mini ghost" data-act="cmp">${getCmp().includes(it.id)?"У порівн.":"Порівняти"}</button>
-        </div>
-      </div>`;
-    el.querySelector('[data-act="detail"]').onclick=()=>openDetail(it.id);
-    el.querySelector('[data-act="fav"]').onclick=()=>toggleFav(it.id,true);
-    el.querySelector('[data-act="cmp"]').onclick=()=>toggleCmp(it.id,true);
+    const el=document.createElement('article'); el.className="card"; el.setAttribute('role','button'); el.title="Дивитися";
+    el.innerHTML=`<div class="thumb"><div class="badge">${it.price.toLocaleString('uk-UA')} ${it.currency}</div><div class="views">👁 ${it.views}</div></div>
+                  <div class="body">
+                    <div class="title">${it.brand} ${it.model} • ${it.year}</div>
+                    <div class="meta">${it.city} • ${it.section}</div>
+                    <div class="meta">${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.gear}</div>
+                  </div>`;
+    const img=imgWithFallback(it.img, `${it.brand} ${it.model}`, it.year+it.price);
+    el.querySelector(".thumb").appendChild(img);
+    el.onclick=()=>openDetail(it.id); // відкриваємо по кліку всю картку
     grid.appendChild(el);
   }
 
-  // Дебаунс на кнопку "Знайти" (антиспам)
+  // Антиспам на «Знайти»
   let applyLock=false;
-  $("#btnApply").onclick=()=>{
-    if(applyLock) return;
-    applyLock=true; applyFilters();
-    setTimeout(()=>applyLock=false, 600);
-  };
+  $("#btnApply").onclick=()=>{ if(applyLock) return; applyLock=true; applyFilters(); setTimeout(()=>applyLock=false, 600); };
+  $("#btnReset").onclick=()=>{$$("#searchPanel .select, #searchPanel .input").forEach(x=>x.value=""); fltRecent.checked=false; applyFilters();};
+  $("#btnMore").onclick=renderMore; $("#sortBy").onchange=applyFilters;
 
-  $("#btnReset").onclick=()=>{$$("#searchPanel .select, #searchPanel .input").forEach(x=>x.value=""); fltPhotoOnly.checked=false; fltRecent.checked=false; applyFilters();};
-  $("#btnMore").onclick=renderMore;
-  $("#sortBy").onchange=applyFilters;
-
-  // Початковий рендер
+  // Стартовий рендер
   applyFilters();
 
-  // ===== ДЕТАЛІ ====================================================================
+  // ===== Детальна
   function openDetail(id){
-    const it=getDB().find(x=>x.id===id); if(!it) return;
+    const db=getDB();
+    const idx=db.findIndex(x=>x.id===id); if(idx<0) return;
+    const it=db[idx];
+
+    // Лічильник переглядів
+    it.views = (it.views||0)+1; db[idx]=it; setDB(db);
+
     const d=$("#detail"); d.classList.add('active');
-    $("#dClose").onclick=()=>d.classList.remove('active');
+    $("#dClose").onclick=()=>{ d.classList.remove('active'); applyFilters(); };
 
     $("#dHeader").innerHTML=`
       <div class="title" style="font:700 20px/1.2 'Russo One'">${it.brand} ${it.model} ${it.year}</div>
-      <div class="grow"></div>
       <div class="pill yellow">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>
+      <div class="pill" style="margin-left:auto">👁 ${it.views}</div>
     `;
-    const imgs=[canvasPNG(`${it.brand} ${it.model}`,0), canvasPNG(`${it.brand} ${it.model}`,1), canvasPNG(`${it.brand} ${it.model}`,2)];
-    $("#dGal").innerHTML=`
-      <div class="big"><img src="${imgs[0]}" loading="lazy"></div>
-      <div class="sm">
-        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[1]}" loading="lazy"></div>
-        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[2]}" loading="lazy"></div>
-      </div>`;
+
+    const big=document.createElement('img'); big.loading="lazy"; big.alt=`${it.brand} ${it.model}`;
+    big.src=it.img; big.onerror=()=>{big.src=canvasPNG(`${it.brand} ${it.model}`,0);};
+
+    const s1=document.createElement('img'); s1.loading="lazy"; s1.alt="view1"; s1.src=carPhotoURL(it.brand,it.model,(id.length*17)%100000);
+    s1.onerror=()=>{s1.src=canvasPNG(`${it.brand} ${it.model}`,1);};
+    const s2=document.createElement('img'); s2.loading="lazy"; s2.alt="view2"; s2.src=carPhotoURL(it.brand,it.model,(id.length*31)%100000);
+    s2.onerror=()=>{s2.src=canvasPNG(`${it.brand} ${it.model}`,2);};
+
+    $("#dGal").innerHTML=`<div class="big"></div><div class="sm"><div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"></div><div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"></div></div>`;
+    $("#dGal").querySelector(".big").appendChild(big);
+    const sm=$("#dGal").querySelectorAll(".sm > div");
+    sm[0].appendChild(s1); sm[1].appendChild(s2);
+
     $("#dSpecs").innerHTML=`
-      ${spec("Місто",it.city)} ${spec("Розділ",it.section)} ${spec("Пробіг", (it.mileage/1000|0)+" тис.км")} ${spec("Паливо",it.fuel)}
-      ${spec("Коробка",it.geар||it.gear)} ${spec("Привід",it.drive)} ${spec("Кузов",it.body)} ${spec("Потужність",it.power+" к.с.")}
-      ${spec("Колір",it.color)} ${spec("VIN",it.vin||"—")}
+      ${spec("Місто",it.city)} ${spec("Розділ",it.section)} ${spec("Пробіг",(it.mileage/1000|0)+" тис.км")}
+      ${spec("Паливо",it.fuel)} ${spec("Коробка",it.geар||it.gear)} ${spec("Привід",it.drive)}
+      ${spec("Кузов",it.body)} ${spec("Потужність",it.power+" к.с.")} ${spec("Колір",it.color)} ${spec("VIN",it.vin||"—")}
     `;
     $("#dDesc").textContent = it.desc;
-    $("#dSeller").innerHTML=`
-      <div class="avatar">${it.seller.name[0]}</div>
+    $("#dSeller").innerHTML=`<div class="avatar">${(it.seller.name||"П")[0]}</div>
       <div><div class="h">Продавець</div><div>${it.seller.name}</div><div class="small">${it.seller.phone}</div></div>`;
-    $("#dChat").onclick=()=>openChat(it.id);
-    $("#dFav").onclick=()=>toggleFav(it.id,true);
-    $("#dCmp").onclick=()=>toggleCmp(it.id,true);
   }
   function spec(k,v){return `<div class="spec"><div class="h">${k}</div>${v}</div>`}
 
-  // ===== ОБРАНЕ / ПОРІВНЯННЯ ======================================================
-  function toggleFav(id, refresh){
-    let f=getFav(); const i=f.indexOf(id); if(i>=0) f.splice(i,1); else f.push(id); setFav(f);
-    if(refresh) applyFilters(); renderFav();
-  }
-  function toggleCmp(id, refresh){
-    let c=getCmp(); const i=c.indexOf(id); if(i>=0) c.splice(i,1); else c.push(id); setCmp(c.slice(0,4));
-    if(refresh) applyFilters(); renderCmp();
-  }
-  function openDrawer(el){ el.classList.add('active'); }
-  function closeDrawer(el){ el.classList.remove('active'); }
-
-  function renderFav(){
-    const d=$("#favDrawer"); const ids=getFav(); const db=getDB();
-    d.innerHTML=`<h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Обрані</h3>`+(ids.length? "":"<div class='muted'>Порожньо</div>");
-    ids.forEach(id=>{
-      const it=db.find(x=>x.id===id); if(!it) return;
-      d.innerHTML+=`<div class="item"><b>${it.brand} ${it.model} ${it.year}</b><br>
-        ${it.city} • ${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.price.toLocaleString('uk-UA')} ${it.currency}<br>
-        <div class="actions" style="margin-top:6px"><button class="btn mini" onclick="openDetail('${id}')">Детальніше</button>
-        <button class="btn mini ghost" onclick="toggleFav('${id}',true)">Прибрати</button></div></div>`;
-    });
-  }
-  function renderCmp(){
-    const d=$("#cmpDrawer"); const ids=getCmp(); const db=getDB();
-    d.innerHTML=`<h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Порівняння</h3>`+(ids.length? "":"<div class='muted'>Додайте до 4 авто для порівняння.</div>");
-    ids.forEach(id=>{
-      const it=db.find(x=>x.id===id); if(!it) return;
-      d.innerHTML+=`<div class="item"><b>${it.brand} ${it.model} ${it.year}</b><br>
-        ${it.fuel} • ${it.geар||it.gear} • ${it.drive} • ${it.power} к.с. • Пробіг ${(it.mileage/1000|0)} тис.км<br>
-        <b>${it.price.toLocaleString('uk-UA')} ${it.currency}</b> — ${it.city}
-        <div class="actions" style="margin-top:6px"><button class="btn mini ghost" onclick="toggleCmp('${id}',true)">Прибрати</button></div></div>`;
-    });
-  }
-
-  // ===== ЧАТ З ПРОДАВЦЕМ (антиспам) ===============================================
-  function openChat(listingId){
-    const d=$("#chatDrawer"); openDrawer(d);
-    const db=getDB(); const it=db.find(x=>x.id===listingId); if(!it) return;
-    const chats=getChats(); chats[listingId]=chats[listingId]||[];
-    d.innerHTML=`<h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Чат з продавцем • ${it.brand} ${it.model}</h3>
-      <div id="chatMsgs"></div>
-      <div class="chat-row"><input id="chatInput" class="input" placeholder="Напишіть повідомлення…"><button class="btn" id="chatSend">Надіслати</button></div>
-      <div class="muted" style="margin-top:6px">Телефон: ${it.seller.phone} • Антиспам: 1 повід. / 5 сек</div>`;
-    const msgsDiv=$("#chatMsgs");
-    const ctrl=getCtrl(); ctrl.chatLast=ctrl.chatLast||{}; setCtrl(ctrl);
-    function render(){ msgsDiv.innerHTML = chats[listingId].map(m=>`<div class="item"><b>${m.who}:</b> ${escapeHtml(m.text)} <span class="small">(${m.t})</span></div>`).join(""); }
-    render();
-    $("#chatSend").onclick=()=>{
-      const v=$("#chatInput").value.trim(); if(!v) return;
-      const now=Date.now(); const last=ctrl.chatLast[listingId]||0;
-      if(now-last<5000){ alert("Занадто часто. Зачекайте кілька секунд."); return; }
-      if(chats[listingId].length && chats[listingId][chats[listingId].length-1].text===v){ alert("Повторювати одне й те саме не можна."); return; }
-      chats[listingId].push({who:"Покупець", text:v, t:timeHM()});
-      ctrl.chatLast[listingId]=now; setCtrl(ctrl); setChats(chats); render(); $("#chatInput").value="";
-      setTimeout(()=>{ chats[listingId].push({who:"Продавець", text:"Актуально. Можливий торг.", t:timeHM()}); setChats(chats); render(); },600);
-    };
-  }
-
-  // ===== ДОДАТИ ОГОЛОШЕННЯ (валідація + антиспам) =================================
-  $("#sSave").onclick=async ()=>{
+  // ===== Додати оголошення (валідація + антиспам)
+  $("#sSave").onclick=()=>{
     const ctrl=getCtrl(); const now=Date.now();
     if(ctrl.lastPost && now-ctrl.lastPost<60000){ alert("Публікувати можна не частіше 1 разу на 60 сек."); return; }
 
-    const brand=$("#sBrand").value||""; if(!brand) return alert("Оберіть марку.");
-    const year=+($("#sYear").value||0); if(!(year>=1990 && year<=2025)) return alert("Рік від 1990 до 2025.");
-    const price=+($("#sPrice").value||0); if(!(price>=500 && price<=500000)) return alert("Вкажіть коректну ціну $500–500000.");
-    const phone=$("#sPhone").value.trim(); if(!/^\+?\d[\d\s\-]{8,}$/.test(phone)) return alert("Вкажіть коректний телефон.");
-    const vin=$("#sVIN").value.trim(); if(vin && !/^[A-HJ-NPR-Z0-9]{8,17}$/i.test(vin)) return alert("VIN має 8–17 символів, латиниця/цифри.");
-    const desc=$("#sDesc").value.trim(); if(desc.length<20) return alert("Опис щонайменше 20 символів.");
     const city=$("#sCity").value, section=$("#sSection").value;
-    const model=$("#sModel").value || (BRANDS[brand] ? BRANDS[brand][0] : "Модель");
+    const brand=$("#sBrand").value, model=$("#sModel").value;
+    if(!city||!section||!brand||!model) return alert("Заповніть місто/розділ/марку/модель.");
+
+    const year=+($("#sYear").value||0); if(!(year>=1990 && year<=2025)) return alert("Рік 1990–2025.");
+    const price=+($("#sPrice").value||0); if(!(price>=500 && price<=500000)) return alert("Ціна $500–500000.");
+    const phone=$("#sPhone").value.trim(); if(!/^\+?\d[\d\s\-]{8,}$/.test(phone)) return alert("Телефон некоректний.");
+    const vin=$("#sVIN").value.trim(); if(vin && !/^[A-HJ-NPR-Z0-9]{8,17}$/i.test(vin)) return alert("VIN 8–17 символів.");
+    const desc=$("#sDesc").value.trim(); if(desc.length<20) return alert("Опис ≥ 20 символів.");
+
     const mileage=+($("#sMileage").value||0), fuel=$("#sFuel").value, gear=$("#sGear").value, drive=$("#sDrive").value, body=$("#sBody").value, color=$("#sColor").value, power=+($("#sPower").value||100);
 
-    // Фото
-    const files=$("#sPhotos").files; const images=[];
-    if(files && files.length){
-      for(let i=0;i<Math.min(3,files.length);i++){
-        if(files[i].size>2*1024*1024) return alert("Фото має бути ≤2 МБ.");
-        images.push(await fileToDataUrl(files[i]));
-      }
-    }
-    while(images.length<3) images.push(canvasPNG(`${brand} ${model}`, images.length));
-
-    const id=uid();
     const db=getDB();
     if(vin && db.some(x=>x.vin && x.vin===vin)) return alert("Авто з таким VIN вже існує.");
-    db.unshift({
+
+    const id=uid();
+    const rec={
       id, city, section, brand, model, year, mileage, fuel, gear, drive, body, power, color,
       price, currency:"$", created: now, vin, seller:{name:"Приватний продавець", phone}, desc,
-      userImages: images
-    });
-    setDB(db);
+      img: carPhotoURL(brand, model, (id.length*53)%100000),
+      views: rand(5,25)
+    };
+    db.unshift(rec); setDB(db);
     ctrl.lastPost=now; setCtrl(ctrl);
-    alert("Оголошення опубліковано."); applyFilters();
+    alert("Оголошення опубліковано.");
+    applyFilters();
   };
-  function fileToDataUrl(f){return new Promise(res=>{const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(f);});}
 
-  // ===== ІМПОРТ JSON ===============================================================
-  // Формат: масив об'єктів {brand,model,year,..., images:[dataUrl або url], ...}
-  // (посилання з інших сайтів можуть не віддати картинку через CORS/анти-hotlink — краще dataURL)
-  $("#importJson").addEventListener("change", async (e)=>{
-    const file=e.target.files?.[0]; if(!file) return;
-    try{
-      const text=await file.text(); const arr=JSON.parse(text);
-      if(!Array.isArray(arr)) throw new Error("JSON має бути масивом оголошень");
-      const db=getDB();
-      arr.slice(0,3000).forEach(src=>{
-        const id=uid();
-        const images = (src.images&&src.images.length)? src.images.slice(0,3) : [canvasPNG(`${src.brand||'Авто'} ${src.model||''}`,0),canvasPNG(`${src.brand||'Авто'} ${src.model||''}`,1),canvasPNG(`${src.brand||'Авто'} ${src.model||''}`,2)];
-        db.unshift({
-          id,
-          city: src.city||pick(CITIES),
-          section: src.section||pick(SECTIONS),
-          brand: src.brand||"Brand",
-          model: src.model||"Model",
-          year: +src.year||2020,
-          mileage: +src.mileage||rand(10000,200000),
-          fuel: src.fuel||pick(FUELS),
-          gear: src.gear||pick(GEARS),
-          drive: src.drive||pick(DRIVE),
-          body: src.body||pick(BODIES),
-          power: +src.power||rand(80,250),
-          color: src.color||pick(COLORS),
-          price: +src.price||10000,
-          currency: src.currency||"$",
-          created: Date.now(),
-          vin: src.vin||"",
-          seller: src.seller||{name:"Імпорт", phone:"+380"},
-          desc: src.desc||"Імпортоване оголошення.",
-          userImages: images
-        });
-      });
-      setDB(db); applyFilters(); alert("Імпортовано!");
-    }catch(err){ alert("Помилка імпорту: "+err.message); }
-    e.target.value="";
-  });
-
-  // ===== Навігація/дровери ========================================================
-  const favDrawer=$("#favDrawer"), cmpDrawer=$("#cmpDrawer"), chatDrawer=$("#chatDrawer");
-  $("#tabFav").onclick=()=>{ renderFav(); favDrawer.classList.add('active'); };
-  $("#tabCmp").onclick=()=>{ renderCmp(); cmpDrawer.classList.add('active'); };
-  $("#tabChat").onclick=()=>{ chatDrawer.innerHTML='<div class="muted">Відкрий чат із картки авто або з детальної сторінки.</div>'; chatDrawer.classList.add('active'); };
-  document.addEventListener('keydown',e=>{ if(e.key==="Escape"){ favDrawer.classList.remove('active'); cmpDrawer.classList.remove('active'); chatDrawer.classList.remove('active'); $("#detail").classList.remove('active'); } });
+  // Навігація (дві вкладки)
   $("#tabSearch").onclick=()=>{ $("#sellPanel").style.display="none"; window.scrollTo({top:0, behavior:"smooth"}); };
   $("#tabSell").onclick=()=>{ $("#sellPanel").style.display="block"; window.scrollTo({top:document.body.scrollHeight, behavior:"smooth"}); };
 
-  // Перегенерація БД (антиспам)
-  let regenLock=false;
-  $("#regenBtn").onclick=()=>{
-    if(regenLock) return;
-    if(confirm(`Згенерувати базу на ~${TARGET_TOTAL} оголошень? Поточні дані будуть перезаписані.`)){
-      regenLock=true; setTimeout(()=>regenLock=false, 5000);
-      generateDB(); applyFilters();
-    }
-  };
   </script>
 </body>
 </html>
