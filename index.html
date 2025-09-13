@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <title>AUTO 369° — пошук і продаж авто</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no"/>
+  <meta name="format-detection" content="telephone=no"/>
+  <meta name="theme-color" content="#07142e"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: radial-gradient(1100px 800px at 50% 10%, #0a1f44 0%, #081939 42%, #07142e 100%);
+      --paper:#fff; --ink:#000;
+      --brand:#ffd33b; --brand-press:#ffbf00;
+      --line:rgba(255,255,255,.14); --glass:rgba(12,20,44,.68);
+      --field-bg:rgba(255,255,255,.08); --field-br:rgba(255,255,255,.22); --ph:rgba(255,255,255,.7);
+      --top:60px;
+    }
+    *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+    html,body{height:100%}
+    body{margin:0; background:var(--bg); color:var(--paper); font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;}
+
+    .topbar{
+      position:sticky; top:0; z-index:50; height:var(--top);
+      display:flex; align-items:center; gap:10px; padding:10px 12px;
+      background:linear-gradient(180deg, rgba(7,15,35,.95), rgba(7,15,35,.72));
+      border-bottom:1px solid var(--line);
+    }
+    .logo{background:var(--brand); color:#111; border-radius:12px; padding:8px 12px; font:700 16px/1 "Russo One",sans-serif;}
+    .pill{display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 12px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.08); cursor:pointer; font-weight:700;}
+    .pill.yellow{background:var(--brand); color:#111; border-color:rgba(0,0,0,.2); font-family:"Russo One"; text-transform:uppercase;}
+    .grow{flex:1}
+    .tabs{display:flex; gap:8px}
+
+    .container{max-width:1200px; margin:12px auto; padding:0 12px;}
+    .panel{background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:12px; box-shadow:0 20px 40px rgba(0,0,0,.45); backdrop-filter:saturate(130%) blur(8px);}
+
+    .filters{display:grid; grid-template-columns:repeat(6,1fr); gap:10px;}
+    @media (max-width:1024px){ .filters{grid-template-columns:repeat(3,1fr);} }
+    @media (max-width:640px){ .filters{grid-template-columns:1fr 1fr;} }
+
+    label{font-size:12px; font-weight:800; opacity:.92; display:block; margin:0 0 6px;}
+    .input,.select{
+      width:100%; height:46px; border-radius:12px; border:1px solid var(--field-br);
+      background:var(--field-bg); color:#fff; padding:0 12px; font-size:14px; outline:none;
+    }
+    .input::placeholder{color:var(--ph)}
+    .check{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:13px; opacity:.9}
+    .actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap}
+    .btn{height:48px; border:none; border-radius:14px; background:var(--brand); color:#111; font:700 16px/48px "Russo One"; padding:0 18px; cursor:pointer; box-shadow:0 6px 0 rgba(0,0,0,.35), inset 0 -3px 0 rgba(0,0,0,.18);}
+    .btn:active{transform:translateY(2px); background:var(--brand-press); box-shadow:0 4px 0 rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.18);}
+    .btn.ghost{background:rgba(255,255,255,.1); color:#fff;}
+
+    .topline{display:flex; align-items:center; gap:10px; margin:14px 0;}
+    .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+    @media (max-width:1024px){ .grid{grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+
+    .card{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:14px; overflow:hidden; display:flex; flex-direction:column;}
+    .thumb{position:relative; padding-top:62%; background:#0b3a8a; overflow:hidden;}
+    .thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+    .price{position:absolute; left:8px; bottom:8px; background:var(--brand); color:#111; border-radius:10px; padding:6px 10px; font:700 14px/1 "Russo One";}
+    .body{padding:10px; display:flex; flex-direction:column; gap:6px}
+    .title{font:700 16px/1.2 "Russo One"; letter-spacing:.4px}
+    .meta{font-size:13px; opacity:.95}
+    .card .row{display:flex; gap:8px; margin-top:8px}
+    .mini{height:38px; line-height:38px; border-radius:12px; padding:0 12px; font:700 13px/38px "Russo One";}
+
+    .detail{position:fixed; inset:0; z-index:60; display:none; background:rgba(0,0,0,.5);}
+    .detail.active{display:block;}
+    .sheet{position:absolute; left:50%; top:6vh; transform:translateX(-50%); width:min(1080px,96vw); max-height:88vh; overflow:auto; background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:12px; box-shadow:0 20px 40px rgba(0,0,0,.6); backdrop-filter:saturate(130%) blur(8px);}
+    .gal{display:grid; grid-template-columns:2fr 1fr; gap:10px;}
+    @media (max-width:900px){ .gal{grid-template-columns:1fr;} }
+    .gal .big{position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden}
+    .gal .big img,.gal .sm img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+    .gal .sm{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .close{position:sticky; top:0; margin-left:auto}
+    .specs{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+    @media (max-width:900px){ .specs{grid-template-columns:repeat(2,1fr);} }
+    .spec{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:12px; padding:8px; font-size:13px}
+    .h{font:700 14px/1 "Russo One"; margin-bottom:6px}
+    .divider{height:1px; background:var(--line); margin:10px 0}
+    .seller{display:flex; gap:10px; align-items:center}
+    .avatar{width:44px; height:44px; border-radius:50%; background:#203157; display:flex; align-items:center; justify-content:center; font-weight:800}
+
+    .drawer{position:fixed; right:12px; top:calc(var(--top) + 10px); bottom:12px; width:min(380px,92vw); background:var(--glass); border:1px solid var(--line); border-radius:16px; padding:12px; z-index:55; display:none; overflow:auto; box-shadow:0 20px 40px rgba(0,0,0,.45); backdrop-filter:saturate(130%) blur(8px);}
+    .drawer.active{display:block}
+    .item{border:1px solid var(--line); border-radius:12px; padding:8px; margin-bottom:8px; background:rgba(255,255,255,.06)}
+    .chat-row{display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px}
+    .small{font-size:12px; opacity:.85}
+
+    .form{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+    @media (max-width:900px){ .form{grid-template-columns:1fr 1fr} }
+    @media (max-width:600px){ .form{grid-template-columns:1fr} }
+    .file{height:46px; border-radius:12px; border:1px solid var(--field-br); background:var(--field-bg); color:#fff; padding:8px 10px}
+
+    .muted{opacity:.85; font-size:13px}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">AUTO 369°</div>
+    <div class="tabs">
+      <div class="pill yellow" id="tabSearch">Пошук</div>
+      <div class="pill" id="tabSell">Додати авто</div>
+      <div class="pill" id="tabFav">Обрані</div>
+      <div class="pill" id="tabCmp">Порівняння</div>
+      <div class="pill" id="tabChat">Чати</div>
+    </div>
+    <div class="grow"></div>
+    <div class="pill" id="regenBtn" title="Перегенерувати базу">Наповнити базу</div>
+  </header>
+
+  <main class="container">
+    <!-- ФІЛЬТРИ -->
+    <section class="panel" id="searchPanel">
+      <div class="filters">
+        <div><label>Місто</label><select class="select" id="fltCity"></select></div>
+        <div><label>Розділ</label><select class="select" id="fltSection"></select></div>
+        <div><label>Марка</label><select class="select" id="fltBrand"></select></div>
+        <div><label>Модель</label><select class="select" id="fltModel"></select></div>
+        <div><label>Рік від</label><select class="select" id="fltYearMin"></select></div>
+        <div><label>Рік до</label><select class="select" id="fltYearMax"></select></div>
+
+        <div><label>Ціна від, $</label><input class="input" id="fltPriceMin" placeholder="0"></div>
+        <div><label>Ціна до, $</label><input class="input" id="fltPriceMax" placeholder="∞"></div>
+        <div><label>Пробіг до, тис. км</label><input class="input" id="fltMileageMax" placeholder="∞"></div>
+        <div><label>Паливо</label><select class="select" id="fltFuel"></select></div>
+        <div><label>Коробка</label><select class="select" id="fltGear"></select></div>
+        <div><label>Привід</label><select class="select" id="fltDrive"></select></div>
+
+        <div><label>Кузов</label><select class="select" id="fltBody"></select></div>
+        <div><label>Колір</label><select class="select" id="fltColor"></select></div>
+        <div><label>Потужність від, к.с.</label><input class="input" id="fltPowerMin" placeholder="0"></div>
+        <div><label>Пошук (назва/VIN)</label><input class="input" id="fltQuery" placeholder="напр., Tesla, AA...VIN"></div>
+        <div class="check"><input type="checkbox" id="fltPhotoOnly"> <label for="fltPhotoOnly">Тільки з фото</label></div>
+        <div class="check"><input type="checkbox" id="fltRecent"> <label for="fltRecent">Оголошення за 30 днів</label></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnApply">Знайти</button>
+        <button class="btn ghost" id="btnReset">Скинути</button>
+        <select class="select" id="sortBy" style="max-width:240px">
+          <option value="new">Сортувати: нові</option>
+          <option value="priceAsc">Ціна ↑</option>
+          <option value="priceDesc">Ціна ↓</option>
+          <option value="yearDesc">Рік ↓</option>
+          <option value="mileageAsc">Пробіг ↑</option>
+          <option value="powerDesc">Потужність ↓</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- РЕЗУЛЬТАТИ -->
+    <section class="topline">
+      <div id="resCount" class="muted">0 результатів</div>
+      <div class="grow"></div>
+      <button class="btn mini" id="btnMore">Показати ще</button>
+    </section>
+    <section class="grid" id="grid"></section>
+
+    <!-- ДОДАТИ АВТО -->
+    <section id="sellPanel" class="panel" style="display:none; margin-top:14px">
+      <h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Додати оголошення</h3>
+      <div class="form">
+        <div><label>Місто</label><select class="select" id="sCity"></select></div>
+        <div><label>Розділ</label><select class="select" id="sSection"></select></div>
+        <div><label>Марка</label><select class="select" id="sBrand"></select></div>
+        <div><label>Модель</label><input class="input" id="sModel" placeholder="напр., Camry"></div>
+        <div><label>Рік</label><input class="input" id="sYear" placeholder="2018"></div>
+        <div><label>Пробіг, км</label><input class="input" id="sMileage" placeholder="95000"></div>
+        <div><label>Паливо</label><select class="select" id="sFuel"></select></div>
+        <div><label>Коробка</label><select class="select" id="sGear"></select></div>
+        <div><label>Привід</label><select class="select" id="sDrive"></select></div>
+        <div><label>Кузов</label><select class="select" id="sBody"></select></div>
+        <div><label>Колір</label><select class="select" id="sColor"></select></div>
+        <div><label>Потужність, к.с.</label><input class="input" id="sPower" placeholder="120"></div>
+        <div><label>Ціна, $</label><input class="input" id="sPrice" placeholder="13500"></div>
+        <div><label>VIN (опц.)</label><input class="input" id="sVIN" placeholder="WAUZZZ..."></div>
+        <div><label>Телефон</label><input class="input" id="sPhone" placeholder="+380..."></div>
+        <div><label>Фото (до 3)</label><input class="file" id="sPhotos" type="file" accept="image/*" multiple></div>
+        <div style="grid-column:1/-1"><label>Опис</label><textarea class="input" id="sDesc" rows="3" style="height:auto; padding:10px" placeholder="Стан, комплектація... (мін. 20 символів)"></textarea></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="sSave">Опублікувати</button>
+        <div class="muted">Антиспам: не частіше 1 оголошення на 60 сек; фото ≤ 2 МБ кожне.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- DRAWERS -->
+  <aside id="favDrawer" class="drawer"></aside>
+  <aside id="cmpDrawer" class="drawer"></aside>
+  <aside id="chatDrawer" class="drawer"></aside>
+
+  <!-- DETAIL -->
+  <div id="detail" class="detail">
+    <div class="sheet">
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
+        <div class="logo">AUTO 369°</div>
+        <div class="grow"></div>
+        <button class="btn mini close" id="dClose">Закрити</button>
+      </div>
+      <div id="dHeader" style="display:flex; align-items:center; gap:10px; margin-bottom:8px"></div>
+      <div class="gal" id="dGal"></div>
+      <div class="divider"></div>
+      <div class="specs" id="dSpecs"></div>
+      <div class="divider"></div>
+      <div id="dDesc" class="muted"></div>
+      <div class="divider"></div>
+      <div class="seller" id="dSeller"></div>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn" id="dChat">Написати продавцю</button>
+        <button class="btn ghost" id="dFav">В обрані</button>
+        <button class="btn ghost" id="dCmp">До порівняння</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ===== КОНСТАНТИ/СХОВИЩЕ =======================================================
+  const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+  const DB_KEY="auto369_listings_v2", FAV_KEY="auto369_fav_v2", CMP_KEY="auto369_cmp_v2", CHAT_KEY="auto369_chat_v2", CTRL_KEY="auto369_ctrl_v2";
+
+  const DRIVE=["FWD","RWD","AWD"];
+  const BODIES=["Седан","Хетчбек","Кросовер","Універсал","Мінівен","Купе","Пікап","Позашляховик"];
+  const COLORS=["Чорний","Білий","Сірий","Синій","Червоний","Зелений","Коричневий","Сріблястий"];
+  const FUELS=["Бензин","Дизель","Гібрид","Електро","ГАЗ"];
+  const GEARS=["Механіка","Автомат","Варіатор","Робот"];
+  const SECTIONS=["Легкові","Кросовери","Електро","Вани/Мікроавтобуси"];
+  const YEARS=Array.from({length:26},(_,i)=>2000+i); // 2000..2025
+
+  // Большой список городов UA (облцентры + крупные)
+  const CITIES=[
+    "Київ","Харків","Одеса","Дніпро","Львів","Запоріжжя","Кривий Ріг","Миколаїв","Маріуполь","Вінниця","Херсон",
+    "Полтава","Чернігів","Черкаси","Суми","Житомир","Хмельницький","Чернівці","Рівне","Івано-Франківськ","Тернопіль",
+    "Луцьк","Ужгород","Кам'янське","Кременчук","Біла Церква","Бровари","Бориспіль","Ірпінь","Буча","Обухів","Вишгород",
+    "Фастів","Бердянськ","Мелітополь","Краматорськ","Слов'янськ","Покровськ","Павлоград","Нікополь","Новомосковськ",
+    "Мукачево","Дрогобич","Стрий","Червоноград","Ковель","Калуш","Коломия","Нетішин","Олександрія","Кропивницький",
+    "Охтирка","Шостка","Константинівка","Лубни","Прилуки","Ніжин","Коростень","Бердичів","Умань","Сміла","Канів",
+    "Кам'янець-Подільський","Шепетівка","Ізмаїл","Чорноморськ","Южне","Подільськ","Вознесенськ","Первомайськ",
+    "Нововолинськ","Ковель","Кременчук","Світловодськ","Острог","Сарни","Жовті Води","Долина","Трускавець","Хуст",
+    "Берегове","Володимир","Дубно","Костопіль","Болград","Кілія","Яготин","Переяслав","Боярка","Вишневе","Солом'янський"
+  ];
+
+  // Бренды/модели (расширено)
+  const BRANDS={
+    "Toyota":["Corolla","Camry","RAV4","Land Cruiser","Yaris","Prius","Avensis"],
+    "Volkswagen":["Golf","Passat","Tiguan","Polo","Touareg","Jetta","Transporter"],
+    "BMW":["1 Series","3 Series","5 Series","X1","X3","X5"],
+    "Mercedes-Benz":["A-Class","C-Class","E-Class","GLA","GLC","GLE","Vito"],
+    "Audi":["A3","A4","A6","Q3","Q5","Q7"],
+    "Skoda":["Fabia","Octavia","Superb","Kodiaq","Karoq"],
+    "Renault":["Clio","Megane","Kadjar","Duster","Kangoo","Trafic"],
+    "Hyundai":["i30","Elantra","Tucson","Santa Fe","Accent","Kona"],
+    "Kia":["Rio","Ceed","Sportage","Sorento","Soul","Picanto"],
+    "Nissan":["Micra","Juke","Qashqai","X-Trail","Leaf","Navara"],
+    "Ford":["Fiesta","Focus","Mondeo","Kuga","EcoSport","Transit"],
+    "Opel":["Corsa","Astra","Insignia","Mokka","Zafira","Vivaro"],
+    "Mazda":["3","6","CX-5","CX-30","CX-9"],
+    "Honda":["Civic","Accord","CR-V","HR-V","Jazz"],
+    "Peugeot":["208","308","508","3008","5008","Partner"],
+    "Citroen":["C3","C4","C5","C-Elysee","Berlingo","Jumpy"],
+    "Volvo":["S60","S90","V60","XC60","XC90"],
+    "Subaru":["Impreza","Forester","Outback","XV"],
+    "Mitsubishi":["Lancer","ASX","Outlander","Pajero"],
+    "Tesla":["Model 3","Model S","Model Y","Model X"],
+    "Chevrolet":["Aveo","Cruze","Captiva","Equinox"],
+    "Jeep":["Renegade","Compass","Cherokee","Grand Cherokee"],
+    "Fiat":["Panda","Punto","Tipo","Doblo","Talento"],
+    "Porsche":["Macan","Cayenne","Panamera"],
+    "Lexus":["IS","ES","RX","NX","UX"]
+  };
+
+  // ==== Хелперы хранилища
+  const getDB=()=>{try{return JSON.parse(localStorage.getItem(DB_KEY)||"[]")}catch{return[]}};
+  const setDB=v=>localStorage.setItem(DB_KEY,JSON.stringify(v));
+  const getFav=()=>{try{return JSON.parse(localStorage.getItem(FAV_KEY)||"[]")}catch{return[]}};
+  const setFav=v=>localStorage.setItem(FAV_KEY,JSON.stringify(v));
+  const getCmp=()=>{try{return JSON.parse(localStorage.getItem(CMP_KEY)||"[]")}catch{return[]}};
+  const setCmp=v=>localStorage.setItem(CMP_KEY,JSON.stringify(v));
+  const getChats=()=>{try{return JSON.parse(localStorage.getItem(CHAT_KEY)||"{}")}catch{return{}}};
+  const setChats=v=>localStorage.setItem(CHAT_KEY,JSON.stringify(v));
+  const getCtrl=()=>{try{return JSON.parse(localStorage.getItem(CTRL_KEY)||"{}")}catch{return{}}};
+  const setCtrl=v=>localStorage.setItem(CTRL_KEY,JSON.stringify(v));
+
+  const uid=()=>Math.random().toString(16).slice(2)+Date.now().toString(16);
+  const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+  const pick=a=>a[rand(0,a.length-1)];
+  const timeHM=()=>{const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+  const escapeHtml=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+
+  // ==== Изображения: data:SVG плейсхолдер (без внешних запросов)
+  function svgPlaceholder(title, idx=1){
+    const bg = ["#0b3a8a","#11366b","#0d2b56","#14396e"][idx%4];
+    const txt = encodeURIComponent(title);
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
+      <rect width='100%' height='100%' fill='${bg}'/>
+      <text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle'
+        font-family='Russo One,Arial' font-size='42' fill='#ffd33b'>${txt}</text>
+      <text x='50%' y='90%' dominant-baseline='middle' text-anchor='middle'
+        font-family='Montserrat,Arial' font-size='20' fill='#ffffffaa'>AUTO 369°</text>
+    </svg>`;
+    return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+  }
+
+  // ==== Генератор БД (много записей, но экономим место: не храним base64 фото)
+  // Параметры объема:
+  const PER_CITY_SECTION = 40;  // ↑/↓ чтобы менять размер базы (40 x ~80 городов x 4 секции ≈ 12 800 записей)
+  // Важно: слишком большой объём может быть тяжелым в слабых браузерах. 3–6 тис. комфортно.
+
+  function generateDB(){
+    const out=[];
+    CITIES.forEach(city=>{
+      SECTIONS.forEach(sec=>{
+        for(let i=0;i<PER_CITY_SECTION;i++){
+          const brand=pick(Object.keys(BRANDS));
+          let model=pick(BRANDS[brand]);
+          if(sec==="Електро"){ // электро приоритизируем Tesla/Leaf/Kona
+            if(brand!=="Tesla" && brand!=="Nissan" && brand!=="Hyundai") model="Model 3";
+          }
+          const year=rand(sec==="Електро"?2014:2005, 2025);
+          const mileage=sec==="Електро"?rand(0,180000):rand(10000,350000);
+          const fuel= sec==="Електро" || brand==="Tesla" || model==="Leaf" ? "Електро" : pick(FUELS.filter(f=>f!=="Електро"));
+          const gear= pick(GEARS);
+          const power= fuel==="Електро" ? rand(100,400) : rand(70,300);
+          const priceBase = (fuel==="Електро")? 17000: 6000;
+          const price = Math.max(2000, Math.round(priceBase + (2025-year)*500 + rand(-1500,6000)));
+          const id=uid();
+          out.push({
+            id, city, section:sec, brand, model, year, mileage, fuel, gear,
+            drive: pick(DRIVE), body: pick(BODIES), power, color: pick(COLORS),
+            price, currency:"$", created: Date.now()-rand(0,60*86400*1000),
+            imgKey: brand[0]+model[0], // ключ для плейсхолдера
+            vin: (Math.random()<.25?("UA"+rand(1000000,9999999)):""),
+            seller:{ name: pick(["Олег","Ірина","Сергій","Анна","Віктор","Максим","Марія"])+" "+pick(["К.","Л.","М.","С.","Д."]), phone:"+380"+rand(500000000, 999999999)},
+            desc: "Гарний стан, чесний пробіг. ТО вчасно. Деталі по телефону."
+          });
+        }
+      });
+    });
+    setDB(out);
+  }
+
+  // Инициализация БД
+  if(getDB().length===0){ generateDB(); }
+
+  // ===== UI ИНІТ ===================================================================
+  const fltCity=$("#fltCity"), fltSection=$("#fltSection"), fltBrand=$("#fltBrand"), fltModel=$("#fltModel");
+  const fltYearMin=$("#fltYearMin"), fltYearMax=$("#fltYearMax"), fltFuel=$("#fltFuel"), fltGear=$("#fltGear"),
+        fltDrive=$("#fltDrive"), fltBody=$("#fltBody"), fltColor=$("#fltColor"),
+        fltPowerMin=$("#fltPowerMin"), fltQuery=$("#fltQuery"),
+        fltPhotoOnly=$("#fltPhotoOnly"), fltRecent=$("#fltRecent");
+
+  function fillSelect(el, arr, withAll=true, allText="Будь-який"){
+    el.innerHTML = (withAll?`<option value="">${allText}</option>`:'') + arr.map(x=>`<option value="${x}">${x}</option>`).join('');
+  }
+  fillSelect(fltCity, CITIES); fillSelect(fltSection, SECTIONS);
+  fillSelect(fltFuel, FUELS); fillSelect(fltGear, GEARS);
+  fillSelect(fltDrive, DRIVE); fillSelect(fltBody, BODIES); fillSelect(fltColor, COLORS);
+  fillSelect(fltBrand, Object.keys(BRANDS));
+  fltBrand.addEventListener('change',()=> fillSelect(fltModel, fltBrand.value?BRANDS[fltBrand.value]:[]));
+  fillSelect(fltModel, []);
+  fillSelect(fltYearMin, YEARS); fillSelect(fltYearMax, YEARS);
+
+  // Форма "Додати"
+  ["sCity","sSection","sFuel","sGear","sDrive","sBody","sColor","sBrand"].forEach((id,idx)=>{
+    const map={sCity:CITIES,sSection:SECTIONS,sFuel:FUELS,sGear:GEARS,sDrive:DRIVE,sBody:BODIES,sColor:COLORS,sBrand:Object.keys(BRANDS)};
+    fillSelect($("#"+id), map[id], false);
+  });
+
+  // ===== ПОШУК/РЕНДЕР ==============================================================
+  const grid=$("#grid"), resCount=$("#resCount"), btnMore=$("#btnMore"), sortBy=$("#sortBy");
+  let page=0, pageSize=24, lastResults=[];
+
+  function applyFilters(){
+    const q=(fltQuery.value||"").trim().toLowerCase();
+    const pmin= +($("#fltPriceMin").value||0);
+    const pmax= +($("#fltPriceMax").value||0);
+    const mmax= +($("#fltMileageMax").value||0);
+    const powMin = +((fltPowerMin.value||0));
+
+    let arr=getDB().filter(it=>
+      (!fltCity.value || it.city===fltCity.value) &&
+      (!fltSection.value || it.section===fltSection.value) &&
+      (!fltBrand.value || it.brand===fltBrand.value) &&
+      (!fltModel.value || it.model===fltModel.value) &&
+      (!fltFuel.value || it.fuel===fltFuel.value) &&
+      (!fltGear.value || it.gear===fltGear.value) &&
+      (!fltDrive.value || it.drive===fltDrive.value) &&
+      (!fltBody.value || it.body===fltBody.value) &&
+      (!fltColor.value || it.color===fltColor.value) &&
+      (!fltYearMin.value || it.year>=+fltYearMin.value) &&
+      (!fltYearMax.value || it.year<=+fltYearMax.value) &&
+      (!pmin || it.price>=pmin) &&
+      (!pmax || it.price<=pmax) &&
+      (!mmax || (it.mileage/1000)<=mmax) &&
+      (!powMin || it.power>=powMin) &&
+      (!q || (it.brand+' '+it.model+' '+(it.vin||'') ).toLowerCase().includes(q)) &&
+      (!fltRecent.checked || (Date.now()-it.created)<=30*86400*1000)
+    );
+
+    if(fltPhotoOnly.checked){
+      // все с фото в нашем случае всегда true, т.к. плейсхолдер есть всегда; если хочешь — можно помечать «без фото»
+      // оставим как есть для совместимости интерфейса
+    }
+
+    arr.sort((a,b)=>{
+      switch(sortBy.value){
+        case "priceAsc": return a.price-b.price;
+        case "priceDesc": return b.price-a.price;
+        case "yearDesc": return b.year-a.year;
+        case "mileageAsc": return a.mileage-b.mileage;
+        case "powerDesc": return b.power-a.power;
+        default: return b.created-a.created;
+      }
+    });
+
+    lastResults=arr; page=0; grid.innerHTML="";
+    resCount.textContent=`${arr.length} результатів`;
+    renderMore();
+  }
+  function renderMore(){
+    const slice=lastResults.slice(page*pageSize,(page+1)*pageSize);
+    slice.forEach(renderCard);
+    page++;
+    btnMore.style.display = (page*pageSize < lastResults.length) ? "inline-block":"none";
+  }
+
+  function imgSrcFor(it, idx){ return svgPlaceholder(`${it.brand} ${it.model}`, idx); }
+
+  function renderCard(it){
+    const el=document.createElement('article'); el.className="card";
+    el.innerHTML=`
+      <div class="thumb">
+        <img src="${imgSrcFor(it,1)}" alt="${it.brand} ${it.model}" loading="lazy">
+        <div class="price">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>
+      </div>
+      <div class="body">
+        <div class="title">${it.brand} ${it.model} • ${it.year}</div>
+        <div class="meta">${it.city} • ${it.section}</div>
+        <div class="meta">${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.gear}</div>
+        <div class="row">
+          <button class="btn mini" data-act="detail">Детальніше</button>
+          <button class="btn mini ghost" data-act="fav">${getFav().includes(it.id)?"У вибраному":"В обране"}</button>
+          <button class="btn mini ghost" data-act="cmp">${getCmp().includes(it.id)?"У порівн.":"Порівняти"}</button>
+        </div>
+      </div>`;
+    el.querySelector('[data-act="detail"]').onclick=()=>openDetail(it.id);
+    el.querySelector('[data-act="fav"]').onclick=()=>toggleFav(it.id,true);
+    el.querySelector('[data-act="cmp"]').onclick=()=>toggleCmp(it.id,true);
+    grid.appendChild(el);
+  }
+
+  // Дебаунс на кнопку "Знайти" (антиспам)
+  let applyLock=false;
+  $("#btnApply").onclick=()=>{
+    if(applyLock) return;
+    applyLock=true; applyFilters();
+    setTimeout(()=>applyLock=false, 600);
+  };
+
+  $("#btnReset").onclick=()=>{$$("#searchPanel .select, #searchPanel .input").forEach(x=>x.value=""); fltPhotoOnly.checked=false; fltRecent.checked=false; applyFilters();};
+  $("#btnMore").onclick=renderMore;
+  $("#sortBy").onchange=applyFilters;
+
+  // Стартовый поиск
+  applyFilters();
+
+  // ===== ДЕТАЛІ ====================================================================
+  function openDetail(id){
+    const it=getDB().find(x=>x.id===id); if(!it) return;
+    const d=$("#detail"); d.classList.add('active');
+    $("#dClose").onclick=()=>d.classList.remove('active');
+
+    $("#dHeader").innerHTML=`
+      <div class="title" style="font:700 20px/1.2 'Russo One'">${it.brand} ${it.model} ${it.year}</div>
+      <div class="grow"></div>
+      <div class="pill yellow">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>
+    `;
+    $("#dGal").innerHTML=`
+      <div class="big"><img src="${imgSrcFor(it,1)}" loading="lazy"></div>
+      <div class="sm">
+        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgSrcFor(it,2)}" loading="lazy"></div>
+        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgSrcFor(it,3)}" loading="lazy"></div>
+      </div>`;
+    $("#dSpecs").innerHTML=`
+      ${spec("Місто",it.city)} ${spec("Розділ",it.section)} ${spec("Пробіг", (it.mileage/1000|0)+" тис.км")} ${spec("Паливо",it.fuel)}
+      ${spec("Коробка",it.gear)} ${spec("Привід",it.drive)} ${spec("Кузов",it.body)} ${spec("Потужність",it.power+" к.с.")}
+      ${spec("Колір",it.color)} ${spec("VIN",it.vin||"—")}
+    `;
+    $("#dDesc").textContent = it.desc;
+    $("#dSeller").innerHTML=`
+      <div class="avatar">${it.seller.name[0]}</div>
+      <div><div class="h">Продавець</div><div>${it.seller.name}</div><div class="small">${it.seller.phone}</div></div>`;
+    $("#dChat").onclick=()=>openChat(it.id);
+    $("#dFav").onclick=()=>toggleFav(it.id,true);
+    $("#dCmp").onclick=()=>toggleCmp(it.id,true);
+  }
+  function spec(k,v){return `<div class="spec"><div class="h">${k}</div>${v}</div>`}
+
+  // ===== ОБРАНЕ / ПОРІВНЯННЯ ======================================================
+  function toggleFav(id, refresh){
+    let f=getFav(); const i=f.indexOf(id); if(i>=0) f.splice(i,1); else f.push(id); setFav(f);
+    if(refresh) applyFilters(); renderFav();
+  }
+  function toggleCmp(id, refresh){
+    let c=getCmp(); const i=c.indexOf(id); if(i>=0) c.splice(i,1); else c.push(id); setCmp(c.slice(0,4));
+    if(refresh) applyFilters(); renderCmp();
+  }
+  function openDrawer(el){ el.classList.add('active'); }
+  function closeDrawer(el){ el.classList.remove('active'); }
+
+  function renderFav(){
+    const d=$("#favDrawer"); const ids=getFav(); const db=getDB();
+    d.innerHTML=`<h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Обрані</h3>`+(ids.length? "":"<div class='muted'>Порожньо</div>");
+    ids.forEach(id=>{
+      const it=db.find(x=>x.id===id); if(!it) return;
+      d.innerHTML+=`<div class="item"><b>${it.brand} ${it.model} ${it.year}</b><br>
+        ${it.city} • ${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.price.toLocaleString('uk-UA')} ${it.currency}<br>
+        <div class="actions" style="margin-top:6px"><button class="btn mini" onclick="openDetail('${id}')">Детальніше</button>
+        <button class="btn mini ghost" onclick="toggleFav('${id}',true)">Прибрати</button></div></div>`;
+    });
+  }
+  function renderCmp(){
+    const d=$("#cmpDrawer"); const ids=getCmp(); const db=getDB();
+    d.innerHTML=`<h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Порівняння</h3>`+(ids.length? "":"<div class='muted'>Додайте до 4 авто для порівняння.</div>");
+    ids.forEach(id=>{
+      const it=db.find(x=>x.id===id); if(!it) return;
+      d.innerHTML+=`<div class="item"><b>${it.brand} ${it.model} ${it.year}</b><br>
+        ${it.fuel} • ${it.gear} • ${it.drive} • ${it.power} к.с. • Пробіг ${(it.mileage/1000|0)} тис.км<br>
+        <b>${it.price.toLocaleString('uk-UA')} ${it.currency}</b> — ${it.city}
+        <div class="actions" style="margin-top:6px"><button class="btn mini ghost" onclick="toggleCmp('${id}',true)">Прибрати</button></div></div>`;
+    });
+  }
+
+  // ===== ЧАТ З ПРОДАВЦЕМ (антиспам) ===============================================
+  function openChat(listingId){
+    const d=$("#chatDrawer"); openDrawer(d);
+    const db=getDB(); const it=db.find(x=>x.id===listingId); if(!it) return;
+    const chats=getChats(); chats[listingId]=chats[listingId]||[];
+    d.innerHTML=`<h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Чат з продавцем • ${it.brand} ${it.model}</h3>
+      <div id="chatMsgs"></div>
+      <div class="chat-row"><input id="chatInput" class="input" placeholder="Напишіть повідомлення…"><button class="btn" id="chatSend">Надіслати</button></div>
+      <div class="muted" style="margin-top:6px">Телефон: ${it.seller.phone} • Антиспам: 1 повід. / 5 сек</div>`;
+    const msgsDiv=$("#chatMsgs");
+    const ctrl=getCtrl(); ctrl.chatLast=ctrl.chatLast||{}; setCtrl(ctrl);
+    function render(){ msgsDiv.innerHTML = chats[listingId].map(m=>`<div class="item"><b>${m.who}:</b> ${escapeHtml(m.text)} <span class="small">(${m.t})</span></div>`).join(""); }
+    render();
+    $("#chatSend").onclick=()=>{
+      const v=$("#chatInput").value.trim(); if(!v) return;
+      const now=Date.now(); const last=ctrl.chatLast[listingId]||0;
+      if(now-last<5000){ alert("Занадто часто. Зачекайте кілька секунд."); return; }
+      if(chats[listingId].length && chats[listingId][chats[listingId].length-1].text===v){ alert("Повторювати одне й те саме не можна."); return; }
+      chats[listingId].push({who:"Покупець", text:v, t:timeHM()});
+      ctrl.chatLast[listingId]=now; setCtrl(ctrl); setChats(chats); render(); $("#chatInput").value="";
+      setTimeout(()=>{ chats[listingId].push({who:"Продавець", text:"Актуально. Можливий торг.", t:timeHM()}); setChats(chats); render(); },600);
+    };
+  }
+
+  // ===== ДОДАТИ ОГОЛОШЕННЯ (валідація + антиспам) =================================
+  $("#sSave").onclick=async ()=>{
+    const ctrl=getCtrl(); const now=Date.now();
+    if(ctrl.lastPost && now-ctrl.lastPost<60000){ alert("Публікувати можна не частіше 1 разу на 60 сек."); return; }
+
+    const brand=$("#sBrand").value||""; if(!brand) return alert("Оберіть марку.");
+    const year=+($("#sYear").value||0); if(!(year>=1990 && year<=2025)) return alert("Рік від 1990 до 2025.");
+    const price=+($("#sPrice").value||0); if(!(price>=500 && price<=500000)) return alert("Вкажіть коректну ціну $500–500000.");
+    const phone=$("#sPhone").value.trim(); if(!/^\+?\d[\d\s\-]{8,}$/.test(phone)) return alert("Вкажіть коректний телефон.");
+    const vin=$("#sVIN").value.trim(); if(vin && !/^[A-HJ-NPR-Z0-9]{8,17}$/i.test(vin)) return alert("VIN має 8–17 символів, латиниця/цифри.");
+    const desc=$("#sDesc").value.trim(); if(desc.length<20) return alert("Опис щонайменше 20 символів.");
+    const city=$("#sCity").value, section=$("#sSection").value;
+    const model=$("#sModel").value || (BRANDS[brand] ? BRANDS[brand][0] : "Модель");
+    const mileage=+($("#sMileage").value||0), fuel=$("#sFuel").value, gear=$("#sGear").value, drive=$("#sDrive").value, body=$("#sBody").value, color=$("#sColor").value, power=+($("#sPower").value||100);
+
+    // Фото
+    const files=$("#sPhotos").files; const images=[];
+    if(files && files.length){
+      for(let i=0;i<Math.min(3,files.length);i++){
+        if(files[i].size>2*1024*1024) return alert("Фото має бути ≤2 МБ.");
+        images.push(await fileToDataUrl(files[i]));
+      }
+    }
+    while(images.length<3) images.push(svgPlaceholder(`${brand} ${model} ${year}`, images.length+1));
+
+    const id=uid();
+    const db=getDB();
+    if(vin && db.some(x=>x.vin && x.vin===vin)) return alert("Авто з таким VIN вже існує.");
+    db.unshift({
+      id, city, section, brand, model, year, mileage, fuel, gear, drive, body, power, color,
+      price, currency:"$", created: now, imgKey: brand[0]+model[0], vin, seller:{name:"Приватний продавець", phone}, desc,
+      // для юзерских фото прямо сохраняем base64 в спец-полях
+      userImages: images
+    });
+    setDB(db);
+    ctrl.lastPost=now; setCtrl(ctrl);
+    alert("Оголошення опубліковано.");
+    applyFilters();
+  };
+  function fileToDataUrl(f){return new Promise(res=>{const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(f);});}
+
+  // ===== Навигация/дроверы ========================================================
+  const favDrawer=$("#favDrawer"), cmpDrawer=$("#cmpDrawer"), chatDrawer=$("#chatDrawer");
+  $("#tabFav").onclick=()=>{ renderFav(); favDrawer.classList.add('active'); };
+  $("#tabCmp").onclick=()=>{ renderCmp(); cmpDrawer.classList.add('active'); };
+  $("#tabChat").onclick=()=>{ chatDrawer.innerHTML='<div class="muted">Відкрий чат із картки авто або з детальної сторінки.</div>'; chatDrawer.classList.add('active'); };
+  document.addEventListener('keydown',e=>{ if(e.key==="Escape"){ favDrawer.classList.remove('active'); cmpDrawer.classList.remove('active'); chatDrawer.classList.remove('active'); $("#detail").classList.remove('active'); } });
+  $("#tabSearch").onclick=()=>{ $("#sellPanel").style.display="none"; window.scrollTo({top:0, behavior:"smooth"}); };
+  $("#tabSell").onclick=()=>{ $("#sellPanel").style.display="block"; window.scrollTo({top:document.body.scrollHeight, behavior:"smooth"}); };
+
+  // Перегенерація БД (антиспам)
+  let regenLock=false;
+  $("#regenBtn").onclick=()=>{
+    if(regenLock) return;
+    if(confirm(`Згенерувати велику базу (набір синтетичних оголошень)?\nПоточні дані будуть перезаписані.`)){
+      regenLock=true; setTimeout(()=>regenLock=false, 5000);
+      generateDB(); applyFilters();
+    }
+  };
+
+  // ========= РЕНДЕР ФОТО ДЛЯ КОРИСТУВАЦЬКИХ ОГОЛОШЕНЬ У ДЕТАЛЯХ ===================
+  // Переопределим для детальной: если userImages есть — используем их
+  function imgSrcForDetail(it){
+    if(it.userImages && it.userImages.length) return it.userImages;
+    return [imgSrcFor(it,1),imgSrcFor(it,2),imgSrcFor(it,3)];
+  }
+
+  // Патчим openDetail для userImages:
+  const _openDetail = openDetail;
+  openDetail = function(id){
+    const it=getDB().find(x=>x.id===id); if(!it) return;
+    const d=$("#detail"); d.classList.add('active');
+    $("#dClose").onclick=()=>d.classList.remove('active');
+
+    $("#dHeader").innerHTML=`
+      <div class="title" style="font:700 20px/1.2 'Russo One'">${it.brand} ${it.model} ${it.year}</div>
+      <div class="grow"></div>
+      <div class="pill yellow">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>`;
+    const imgs=imgSrcForDetail(it);
+    $("#dGal").innerHTML=`
+      <div class="big"><img src="${imgs[0]}" loading="lazy"></div>
+      <div class="sm">
+        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[1]}" loading="lazy"></div>
+        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[2]}" loading="lazy"></div>
+      </div>`;
+    $("#dSpecs").innerHTML=`
+      ${spec("Місто",it.city)} ${spec("Розділ",it.section)} ${spec("Пробіг",(it.mileage/1000|0)+" тис.км")} ${spec("Паливо",it.fuel)}
+      ${spec("Коробка",it.geар||it.gear)} ${spec("Привід",it.drive)} ${spec("Кузов",it.body)} ${spec("Потужність",it.power+" к.с.")}
+      ${spec("Колір",it.color)} ${spec("VIN",it.vin||"—")}`;
+    $("#dDesc").textContent = it.desc;
+    $("#dSeller").innerHTML=`<div class="avatar">${(it.seller?.name||"П")[0]}</div>
+      <div><div class="h">Продавець</div><div>${it.seller?.name||"Приватний продавець"}</div><div class="small">${it.seller?.phone||""}</div></div>`;
+    $("#dChat").onclick=()=>openChat(it.id);
+    $("#dFav").onclick=()=>toggleFav(it.id,true);
+    $("#dCmp").onclick=()=>toggleCmp(it.id,true);
+  };
+
+  // ===== УТИЛ =====================================================================
+  function spec(k,v){return `<div class="spec"><div class="h">${k}</div>${v}</div>`}
+  </script>
+</body>
+</html>
