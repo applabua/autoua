@@ -129,6 +129,7 @@
       <input type="file" id="importJson" accept="application/json" style="display:none">
       Імпорт JSON
     </label>
+    <button class="pill" id="btnClear">Очистити базу</button>
   </header>
 
   <main class="container">
@@ -248,12 +249,24 @@
   </div>
 
   <script>
-  // === Важно: вместо копирования чужих объявлений сайт поддерживает ИМПОРТ JSON с вашими фото/данными. ===
-  // Формат импорта — см. ниже в обработчике #importJson.
+  // ====== Легка, безпечна робота зі сховищем (localStorage → sessionStorage) ======
+  const SAFE = {
+    get(k){ try{ return localStorage.getItem(k) ?? sessionStorage.getItem(k); }catch{ try{ return sessionStorage.getItem(k); }catch{ return null } },
+    set(k,v){
+      try{ localStorage.setItem(k,v); return 'local'; }
+      catch(e){
+        try{ sessionStorage.setItem(k,v); alert("Місця в памʼяті браузера не вистачає — дані збережені тимчасово (до перезавантаження)."); return 'session'; }
+        catch{ console.warn("Storage failed"); return 'none'; }
+      }
+    },
+    del(k){ try{ localStorage.removeItem(k) }catch{} try{ sessionStorage.removeItem(k) }catch{} }
+  };
 
   const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-  const DB_KEY="auto369_listings_modal_pager", CTRL_KEY="auto369_ctrl_modal_pager";
+  const EXTRA_KEY="auto369_extras";   // зберігаємо тільки «додані/імпортовані»
+  const CTRL_KEY ="auto369_ctrl";     // дрібні налаштування/таймери антиспаму
 
+  // ==== довідники ====
   const DRIVE=["FWD","RWD","AWD"];
   const BODIES=["Седан","Хетчбек","Кросовер","Універсал","Мінівен","Купе","Пікап","Позашляховик","Кабріолет","Ліфтбек","Фургон"];
   const COLORS=["Чорний","Білий","Сірий","Синій","Червоний","Зелений","Коричневий","Сріблястий","Жовтий","Помаранчевий","Бежевий"];
@@ -262,7 +275,6 @@
   const SECTIONS=["Легкові","Кросовери","Електро","Вани/Мікроавтобуси","Пікапи","Позашляховики"];
   const YEARS=Array.from({length:31},(_,i)=>1995+i);
 
-  // Регионы → города (популярные; можно дополнять)
   const REGIONS={
     "Автономна Республіка Крим":["Сімферополь","Ялта","Керч","Євпаторія"],
     "Вінницька":["Вінниця","Жмеринка","Хмільник","Козятин","Могилів-Подільський"],
@@ -293,7 +305,7 @@
     "м. Севастополь":["Севастополь"]
   };
 
-  // Бренды (много) + «Інша»
+  // Великий список брендів + «Інша марка…»
   const BRANDS={
     "Toyota":["Corolla","Camry","RAV4","Land Cruiser","Yaris","Prius","Avensis","Auris","C-HR","Highlander","Hilux"],
     "Volkswagen":["Golf","Passat","Tiguan","Polo","Touareg","Jetta","Transporter","T-Roc","Caddy","Multivan"],
@@ -348,16 +360,10 @@
     "MG":["ZS","HS","5","3","GS"],
     "SsangYong":["Kyron","Actyon","Tivoli","Korando"],
     "Rover":["25","45","75"],
-    "Peugeot-Citroen":["223","301"],
-
     "Інша марка…":[]
   };
 
-  const getDB=()=>{try{return JSON.parse(localStorage.getItem(DB_KEY)||"[]")}catch{return[]}};
-  const setDB=v=>localStorage.setItem(DB_KEY,JSON.stringify(v));
-  const getCtrl=()=>{try{return JSON.parse(localStorage.getItem(CTRL_KEY)||"{}")}catch{return{}}};
-  const setCtrl=v=>localStorage.setItem(CTRL_KEY,JSON.stringify(v));
-
+  // ===== Глобальні утиліти
   const uid=()=>Math.random().toString(16).slice(2)+Date.now().toString(16);
   const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
   const pick=a=>a[rand(0,a.length-1)];
@@ -389,10 +395,13 @@
     return img;
   }
 
-  // ====== Сид-генерация 2000 объявлений
-  function seedDB(){
+  // ====== База: сид-генерація у памʼяті + «екстра» в сховищі
+  let SEED_COUNT=2000;
+  let DB_MEM=[]; // сид-дані (не пишемо у storage)
+
+  function makeSeed(){
     const out=[]; const regions=Object.keys(REGIONS); const brands=Object.keys(BRANDS); let i=0;
-    while(out.length<2000){
+    while(out.length<SEED_COUNT){
       const region=regions[i%regions.length];
       const city=pick(REGIONS[region]);
       const section=pick(SECTIONS);
@@ -415,11 +424,21 @@
       });
       i++;
     }
-    setDB(out);
+    DB_MEM=out;
   }
-  if(getDB().length===0){ seedDB(); }
+  makeSeed();
 
-  // ====== UI: заполнение селектов
+  function extrasGet(){
+    try{ const raw = SAFE.get(EXTRA_KEY); return raw? JSON.parse(raw): []; }catch{ return []; }
+  }
+  function extrasSet(list){
+    try{ SAFE.set(EXTRA_KEY, JSON.stringify(list)); }
+    catch{ /* фолбек усередині SAFE.set */ }
+  }
+
+  function getDB(){ return DB_MEM.concat(extrasGet()); }
+
+  // ====== UI-заповнення
   const fltRegion=$("#fltRegion"), fltCity=$("#fltCity"), fltCityText=$("#fltCityText"), cityDL=$("#cityDL");
   const fltBrand=$("#fltBrand"), fltModel=$("#fltModel");
   const fltYearMin=$("#fltYearMin"), fltYearMax=$("#fltYearMax"), fltFuel=$("#fltFuel"), fltGear=$("#fltGear"),
@@ -438,12 +457,10 @@
     fillSelect(fltCity, list, true, "Будь-яке");
   }
   refreshCities();
-  // datalist for city search
   cityDL.innerHTML=ALL_CITIES.map(c=>`<option value="${c}">`).join('');
   fltCityText.addEventListener('input', ()=>{
     const v=fltCityText.value.trim();
     if(!v) return;
-    // Если найден точный город — выставляем регион/город
     for(const [reg, arr] of Object.entries(REGIONS)){
       if(arr.includes(v)){ fltRegion.value=reg; refreshCities(); fltCity.value=v; break; }
     }
@@ -452,21 +469,17 @@
 
   // Brands/models
   fillSelect(fltBrand,Object.keys(BRANDS));
-  function refreshModels(){
-    const b=fltBrand.value;
-    fillSelect(fltModel, b?BRANDS[b]:[], true, "Будь-яка");
-  }
-  refreshModels();
-  fltBrand.addEventListener('change', refreshModels);
+  function refreshModels(){ const b=fltBrand.value; fillSelect(fltModel, b?BRANDS[b]:[], true, "Будь-яка"); }
+  refreshModels(); fltBrand.addEventListener('change', refreshModels);
 
   // Other selects
   fillSelect(fltFuel,FUELS); fillSelect(fltGear,GEARS);
   fillSelect(fltDrive,DRIVE); fillSelect(fltBody,BODIES); fillSelect(fltColor,COLORS);
   fillSelect(fltYearMin,YEARS); fillSelect(fltYearMax,YEARS);
 
-  // ==== Кастомные селекты (desktop)
+  // Кастом-селекти (десктоп)
   function enhanceSelect(sel){
-    if (matchMedia('(hover: none)').matches) return; // мобильным — нативное
+    if (matchMedia('(hover: none)').matches) return;
     if (sel.classList.contains('nice-hidden')) return;
     const wrap=document.createElement('div'); wrap.className='nice';
     const btn=document.createElement('button'); btn.type='button'; btn.className='nice-btn';
@@ -488,7 +501,7 @@
   document.addEventListener('click', closeAll);
   $$('.select').forEach(enhanceSelect);
 
-  // ====== ПАГИНАЦИЯ
+  // ===== ПАГІНАЦІЯ
   const grid=$("#grid"), resCount=$("#resCount"), sortBy=$("#sortBy");
   const pager=$("#pager"), pgPrev=$("#pgPrev"), pgNext=$("#pgNext"), pgInfo=$("#pgInfo");
   let page=1, pageSize=50, results=[], totalPages=1;
@@ -547,6 +560,7 @@
     results.slice(start,end).forEach(renderCard);
     pgInfo.textContent=`Сторінка ${page} / ${totalPages}`;
     pgPrev.disabled = page<=1; pgNext.disabled = page>=totalPages;
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
   function renderCard(it){
@@ -562,7 +576,7 @@
       <div class="body">
         <div class="title">${it.brand} ${it.model} • ${it.year}</div>
         <div class="meta">${it.city}, ${it.region} • ${it.section}</div>
-        <div class="meta">${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.gear}</div>
+        <div class="meta">${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.geар||it.gear}</div>
       </div>`;
     el.querySelector(".thumb").prepend(createImg(firstImg, `${it.brand} ${it.model}`, fallback));
     el.onclick=()=>openDetail(it.id);
@@ -572,8 +586,8 @@
   $("#btnApply").onclick=applyFilters;
   $("#btnReset").onclick=()=>{$$("#searchPanel .select, #searchPanel .input").forEach(x=>x.value=""); fltRecent.checked=false; refreshCities(); refreshModels(); applyFilters();};
   $("#sortBy").onchange=()=>{ applyFilters(); };
-  pgPrev.onclick=()=>{ if(page>1){ page--; renderPage(); window.scrollTo({top:0,behavior:"smooth"}); } };
-  pgNext.onclick=()=>{ if(page<totalPages){ page++; renderPage(); window.scrollTo({top:0,behavior:"smooth"}); } };
+  pgPrev.onclick=()=>{ if(page>1){ page--; renderPage(); } };
+  pgNext.onclick=()=>{ if(page<totalPages){ page++; renderPage(); } };
   applyFilters();
 
   // ===== Деталь
@@ -581,7 +595,13 @@
   function openDetail(id){
     const db=getDB(); const idx=db.findIndex(x=>x.id===id); if(idx<0) return;
     const it=db[idx];
-    it.views=(it.views||0)+1; db[idx]=it; setDB(db);
+
+    // views лише в пам'яті (не пишемо 2к записів у storage)
+    if(DB_MEM.some(x=>x.id===id)){ DB_MEM[idx].views=(DB_MEM[idx].views||0)+1; }
+    else{
+      const ext = extrasGet(); const j = ext.findIndex(x=>x.id===id);
+      if(j>-1){ ext[j].views=(ext[j].views||0)+1; extrasSet(ext); }
+    }
 
     const d=$("#detail"); d.classList.add('active');
     $("#dClose").onclick=()=>{ d.classList.remove('active'); renderPage(); };
@@ -589,7 +609,7 @@
     $("#dHeader").innerHTML=`
       <div class="title" style="font:700 20px/1.2 'Russo One'">${it.brand} ${it.model} ${it.year}</div>
       <div class="pill yellow">${it.price.toLocaleString('uk-UA')} ${it.currency||"$"}</div>
-      <div class="pill" style="margin-left:auto">👁 ${it.views}</div>
+      <div class="pill" style="margin-left:auto">👁 ${(it.views||0)+1}</div>
     `;
 
     const imgs=(Array.isArray(it.images)&&it.images.length)?it.images:[null,null,null];
@@ -632,7 +652,9 @@
     fillSelectSimple($("#sModel"), BRANDS[b]||[]);
   });
 
-  // Публикация (антиспам + валидация)
+  function getCtrl(){ try{ return JSON.parse(SAFE.get(CTRL_KEY)||"{}"); }catch{ return {} } }
+  function setCtrl(v){ SAFE.set(CTRL_KEY, JSON.stringify(v)); }
+
   $("#sSave").onclick=()=>{
     const ctrl=getCtrl(); const now=Date.now();
     if(ctrl.lastPost && now-ctrl.lastPost<60000){ alert("Публікувати можна не частіше 1 разу на 60 сек."); return; }
@@ -650,37 +672,28 @@
           drive=$("#sDrive").value, body=$("#sBody").value, color=$("#sColor").value, power=+($("#sPower").value||100);
     const images=($("#sImages").value||"").split(",").map(s=>s.trim()).filter(Boolean).slice(0,3);
 
-    const db=getDB();
-    if(vin && db.some(x=>x.vin && x.vin===vin)) return alert("Авто з таким VIN вже існує.");
+    const ext=extrasGet();
+    if(vin && (ext.some(x=>x.vin && x.vin===vin) || DB_MEM.some(x=>x.vin && x.vin===vin))) return alert("Авто з таким VIN вже існує.");
 
-    db.unshift({
+    ext.unshift({
       id:uid(), region:"", city, section, brand, model, year, mileage, fuel, gear, drive, body, power, color,
       price, currency:"$", created: now, vin, seller:{name:"Приватний продавець", phone}, desc, views: rand(5,25), images
     });
-    setDB(db); ctrl.lastPost=now; setCtrl(ctrl);
+    extrasSet(ext); ctrl.lastPost=now; setCtrl(ctrl);
     alert("Оголошення опубліковано.");
     addModal.classList.remove('active');
     applyFilters();
   };
 
-  // ===== Импорт JSON
-  // Формат элемента массива:
-  // {
-  //   "region":"Київська","city":"Київ","section":"Легкові",
-  //   "brand":"Volkswagen","model":"Golf","year":2018,"mileage":98000,
-  //   "fuel":"Бензин","gear":"Автомат","drive":"FWD","body":"Хетчбек","power":125,"color":"Сірий",
-  //   "price":12500,"currency":"$","vin":"WVW...","created": 1713139200000,
-  //   "seller":{"name":"Олексій","phone":"+380..."}, "desc":"…",
-  //   "images":["https://ваш-хост/1.jpg","data:image/jpeg;base64,..."], "views":250
-  // }
-  $("#importJson").addEventListener("change", async (e)=>{
+  // ===== Імпорт JSON (масив об'єктів формату, описаного нижче)
+  document.getElementById("importJson").addEventListener("change", async (e)=>{
     const f=e.target.files?.[0]; if(!f) return;
     try{
       const arr=JSON.parse(await f.text());
       if(!Array.isArray(arr)) throw new Error("JSON має бути масивом");
-      const db=getDB();
+      const ext=extrasGet();
       arr.forEach(o=>{
-        db.push({
+        ext.push({
           id:uid(), region:o.region||"", city:o.city||"Київ", section:o.section||"Легкові",
           brand:o.brand||"Brand", model:o.model||"Model", year:+o.year||2020, mileage:+o.mileage||rand(10000,200000),
           fuel:o.fuel||"Бензин", gear:o.gear||"Автомат", drive:o.drive||"FWD", body:o.body||"Седан",
@@ -689,10 +702,17 @@
           desc:o.desc||"Імпортоване оголошення.", images:Array.isArray(o.images)?o.images.slice(0,3):[], views:+o.views||rand(150,500)
         });
       });
-      setDB(db); applyFilters(); alert("Імпортовано!");
+      extrasSet(ext);
+      applyFilters(); alert("Імпортовано!");
     }catch(err){ alert("Помилка імпорту: "+err.message); }
     e.target.value="";
   });
+
+  // Очистити локальну базу (на випадок переповнення)
+  document.getElementById("btnClear").onclick=()=>{
+    SAFE.del(EXTRA_KEY); SAFE.del(CTRL_KEY);
+    alert("Локальна база видалена. Сид-дані (2000) залишаються."); applyFilters();
+  };
   </script>
 </body>
 </html>
