@@ -55,7 +55,7 @@
 
     .topline{display:flex; align-items:center; gap:10px; margin:14px 0;}
     .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
-    @media (max-width:1024px){ .grid{grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:1024px){ .grid{grid-template-columns:repeat(2,1,); grid-template-columns:repeat(2,1fr);} }
     @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
 
     .card{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:14px; overflow:hidden; display:flex; flex-direction:column;}
@@ -111,6 +111,10 @@
     </div>
     <div class="grow"></div>
     <div class="pill" id="regenBtn" title="Перегенерувати базу">Наповнити базу</div>
+    <label class="pill" style="cursor:pointer">
+      <input type="file" id="importJson" accept="application/json" style="display:none">
+      Імпорт JSON
+    </label>
   </header>
 
   <main class="container">
@@ -184,7 +188,7 @@
       </div>
       <div class="actions">
         <button class="btn" id="sSave">Опублікувати</button>
-        <div class="muted">Антиспам: не частіше 1 оголошення на 60 сек; фото ≤ 2 МБ кожне.</div>
+        <div class="muted">Антиспам: 1 оголошення / 60 сек; фото ≤ 2 МБ кожне.</div>
       </div>
     </section>
   </main>
@@ -219,9 +223,13 @@
   </div>
 
   <script>
+  // ===== ШВИДКА ПРИМІТКА
+  // Цей застосунок НЕ копіює дані з auto.ria/RST. Він генерує 2000 реалістичних оголошень локально.
+  // Якщо маєш свій JSON з оголошеннями + картинками — імпортуй через кнопку «Імпорт JSON».
+
   // ===== КОНСТАНТИ/СХОВИЩЕ =======================================================
   const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-  const DB_KEY="auto369_listings_v2", FAV_KEY="auto369_fav_v2", CMP_KEY="auto369_cmp_v2", CHAT_KEY="auto369_chat_v2", CTRL_KEY="auto369_ctrl_v2";
+  const DB_KEY="auto369_listings_big", FAV_KEY="auto369_fav_big", CMP_KEY="auto369_cmp_big", CHAT_KEY="auto369_chat_big", CTRL_KEY="auto369_ctrl_big";
 
   const DRIVE=["FWD","RWD","AWD"];
   const BODIES=["Седан","Хетчбек","Кросовер","Універсал","Мінівен","Купе","Пікап","Позашляховик"];
@@ -231,20 +239,16 @@
   const SECTIONS=["Легкові","Кросовери","Електро","Вани/Мікроавтобуси"];
   const YEARS=Array.from({length:26},(_,i)=>2000+i); // 2000..2025
 
-  // Большой список городов UA (облцентры + крупные)
+  // Великий список міст (облцентри + великі)
   const CITIES=[
-    "Київ","Харків","Одеса","Дніпро","Львів","Запоріжжя","Кривий Ріг","Миколаїв","Маріуполь","Вінниця","Херсон",
+    "Київ","Харків","Одеса","Дніпро","Львів","Запоріжжя","Кривий Ріг","Миколаїв","Вінниця","Херсон",
     "Полтава","Чернігів","Черкаси","Суми","Житомир","Хмельницький","Чернівці","Рівне","Івано-Франківськ","Тернопіль",
-    "Луцьк","Ужгород","Кам'янське","Кременчук","Біла Церква","Бровари","Бориспіль","Ірпінь","Буча","Обухів","Вишгород",
-    "Фастів","Бердянськ","Мелітополь","Краматорськ","Слов'янськ","Покровськ","Павлоград","Нікополь","Новомосковськ",
-    "Мукачево","Дрогобич","Стрий","Червоноград","Ковель","Калуш","Коломия","Нетішин","Олександрія","Кропивницький",
-    "Охтирка","Шостка","Константинівка","Лубни","Прилуки","Ніжин","Коростень","Бердичів","Умань","Сміла","Канів",
-    "Кам'янець-Подільський","Шепетівка","Ізмаїл","Чорноморськ","Южне","Подільськ","Вознесенськ","Первомайськ",
-    "Нововолинськ","Ковель","Кременчук","Світловодськ","Острог","Сарни","Жовті Води","Долина","Трускавець","Хуст",
-    "Берегове","Володимир","Дубно","Костопіль","Болград","Кілія","Яготин","Переяслав","Боярка","Вишневе","Солом'янський"
+    "Луцьк","Ужгород","Кропивницький","Кам'янське","Кременчук","Біла Церква","Бровари","Бориспіль","Ірпінь","Буча",
+    "Обухів","Вишгород","Фастів","Бердянськ","Мелітополь","Краматорськ","Слов'янськ","Павлоград","Нікополь","Новомосковськ",
+    "Мукачево","Дрогобич","Стрий","Червоноград","Ковель","Калуш","Коломия","Умань","Бердичів","Коростень","Прилуки","Ніжин"
   ];
 
-  // Бренды/модели (расширено)
+  // Розширений перелік брендів/моделей
   const BRANDS={
     "Toyota":["Corolla","Camry","RAV4","Land Cruiser","Yaris","Prius","Avensis"],
     "Volkswagen":["Golf","Passat","Tiguan","Polo","Touareg","Jetta","Transporter"],
@@ -273,7 +277,7 @@
     "Lexus":["IS","ES","RX","NX","UX"]
   };
 
-  // ==== Хелперы хранилища
+  // Зберігання
   const getDB=()=>{try{return JSON.parse(localStorage.getItem(DB_KEY)||"[]")}catch{return[]}};
   const setDB=v=>localStorage.setItem(DB_KEY,JSON.stringify(v));
   const getFav=()=>{try{return JSON.parse(localStorage.getItem(FAV_KEY)||"[]")}catch{return[]}};
@@ -291,62 +295,59 @@
   const timeHM=()=>{const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
   const escapeHtml=s=>(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 
-  // ==== Изображения: data:SVG плейсхолдер (без внешних запросов)
-  function svgPlaceholder(title, idx=1){
-    const bg = ["#0b3a8a","#11366b","#0d2b56","#14396e"][idx%4];
-    const txt = encodeURIComponent(title);
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'>
-      <rect width='100%' height='100%' fill='${bg}'/>
-      <text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle'
-        font-family='Russo One,Arial' font-size='42' fill='#ffd33b'>${txt}</text>
-      <text x='50%' y='90%' dominant-baseline='middle' text-anchor='middle'
-        font-family='Montserrat,Arial' font-size='20' fill='#ffffffaa'>AUTO 369°</text>
-    </svg>`;
-    return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+  // ===== ЗОБРАЖЕННЯ: Canvas → PNG data: (працює у всіх, навіть з CSP)
+  function canvasPNG(title, colorIdx=0){
+    const c=document.createElement('canvas'); c.width=800; c.height=500;
+    const g=c.getContext('2d');
+    const colors=["#0b3a8a","#11366b","#0d2b56","#14396e","#0c325e","#052547"];
+    g.fillStyle=colors[colorIdx%colors.length]; g.fillRect(0,0,c.width,c.height);
+    g.fillStyle="#ffd33b"; g.font="bold 48px 'Russo One', Arial"; g.textAlign="center";
+    g.fillText(title, 400, 260);
+    g.fillStyle="rgba(255,255,255,.8)"; g.font="20px 'Montserrat', Arial";
+    g.fillText("AUTO 369°", 400, 460);
+    return c.toDataURL("image/png");
   }
 
-  // ==== Генератор БД (много записей, но экономим место: не храним base64 фото)
-  // Параметры объема:
-  const PER_CITY_SECTION = 40;  // ↑/↓ чтобы менять размер базы (40 x ~80 городов x 4 секции ≈ 12 800 записей)
-  // Важно: слишком большой объём может быть тяжелым в слабых браузерах. 3–6 тис. комфортно.
+  // ===== Генерація БД рівно на ~2000 записів =======================================
+  const TARGET_TOTAL = 2000;
 
   function generateDB(){
     const out=[];
-    CITIES.forEach(city=>{
-      SECTIONS.forEach(sec=>{
-        for(let i=0;i<PER_CITY_SECTION;i++){
-          const brand=pick(Object.keys(BRANDS));
-          let model=pick(BRANDS[brand]);
-          if(sec==="Електро"){ // электро приоритизируем Tesla/Leaf/Kona
-            if(brand!=="Tesla" && brand!=="Nissan" && brand!=="Hyundai") model="Model 3";
-          }
-          const year=rand(sec==="Електро"?2014:2005, 2025);
-          const mileage=sec==="Електро"?rand(0,180000):rand(10000,350000);
-          const fuel= sec==="Електро" || brand==="Tesla" || model==="Leaf" ? "Електро" : pick(FUELS.filter(f=>f!=="Електро"));
-          const gear= pick(GEARS);
-          const power= fuel==="Електро" ? rand(100,400) : rand(70,300);
-          const priceBase = (fuel==="Електро")? 17000: 6000;
-          const price = Math.max(2000, Math.round(priceBase + (2025-year)*500 + rand(-1500,6000)));
-          const id=uid();
-          out.push({
-            id, city, section:sec, brand, model, year, mileage, fuel, gear,
-            drive: pick(DRIVE), body: pick(BODIES), power, color: pick(COLORS),
-            price, currency:"$", created: Date.now()-rand(0,60*86400*1000),
-            imgKey: brand[0]+model[0], // ключ для плейсхолдера
-            vin: (Math.random()<.25?("UA"+rand(1000000,9999999)):""),
-            seller:{ name: pick(["Олег","Ірина","Сергій","Анна","Віктор","Максим","Марія"])+" "+pick(["К.","Л.","М.","С.","Д."]), phone:"+380"+rand(500000000, 999999999)},
-            desc: "Гарний стан, чесний пробіг. ТО вчасно. Деталі по телефону."
-          });
-        }
+    const brands = Object.keys(BRANDS);
+    let i=0;
+    while(out.length < TARGET_TOTAL){
+      const city = CITIES[i % CITIES.length];
+      const section = SECTIONS[i % SECTIONS.length];
+      const brand = brands[i % brands.length];
+      const model = pick(BRANDS[brand]);
+      const electric = section==="Електро" || brand==="Tesla" || model==="Leaf" || model==="Kona";
+      const year = electric ? rand(2014,2025) : rand(2005,2025);
+      const mileage = electric ? rand(0,180000) : rand(10000,350000);
+      const fuel = electric ? "Електро" : pick(FUELS.filter(f=>f!=="Електро"));
+      const gear = pick(GEARS);
+      const power = electric ? rand(120,450) : rand(70,320);
+      const priceBase = electric? 18000: 6000;
+      const price = Math.max(2000, Math.round(priceBase + (2025-year)*500 + rand(-1500,7000)));
+      const id=uid();
+      out.push({
+        id, city, section, brand, model, year, mileage, fuel, gear,
+        drive: pick(DRIVE), body: pick(BODIES), power, color: pick(COLORS),
+        price, currency:"$", created: Date.now()-rand(0,60*86400*1000),
+        // динамічні PNG — генеруємо під час відмальовування (економимо місце у сховищі)
+        title:`${brand} ${model}`,
+        vin: (Math.random()<.25?("UA"+rand(1000000,9999999)):""),
+        seller:{ name: pick(["Олег","Ірина","Сергій","Анна","Віктор","Максим","Марія"])+" "+pick(["К.","Л.","М.","С.","Д."]), phone:"+380"+rand(500000000, 999999999)},
+        desc: "Гарний стан, чесний пробіг. ТО вчасно. Деталі по телефону."
       });
-    });
+      i++;
+    }
     setDB(out);
   }
 
-  // Инициализация БД
+  // ініт БД
   if(getDB().length===0){ generateDB(); }
 
-  // ===== UI ИНІТ ===================================================================
+  // ===== UI ІНІТ ===================================================================
   const fltCity=$("#fltCity"), fltSection=$("#fltSection"), fltBrand=$("#fltBrand"), fltModel=$("#fltModel");
   const fltYearMin=$("#fltYearMin"), fltYearMax=$("#fltYearMax"), fltFuel=$("#fltFuel"), fltGear=$("#fltGear"),
         fltDrive=$("#fltDrive"), fltBody=$("#fltBody"), fltColor=$("#fltColor"),
@@ -365,7 +366,7 @@
   fillSelect(fltYearMin, YEARS); fillSelect(fltYearMax, YEARS);
 
   // Форма "Додати"
-  ["sCity","sSection","sFuel","sGear","sDrive","sBody","sColor","sBrand"].forEach((id,idx)=>{
+  ["sCity","sSection","sFuel","sGear","sDrive","sBody","sColor","sBrand"].forEach((id)=>{
     const map={sCity:CITIES,sSection:SECTIONS,sFuel:FUELS,sGear:GEARS,sDrive:DRIVE,sBody:BODIES,sColor:COLORS,sBrand:Object.keys(BRANDS)};
     fillSelect($("#"+id), map[id], false);
   });
@@ -401,10 +402,7 @@
       (!fltRecent.checked || (Date.now()-it.created)<=30*86400*1000)
     );
 
-    if(fltPhotoOnly.checked){
-      // все с фото в нашем случае всегда true, т.к. плейсхолдер есть всегда; если хочешь — можно помечать «без фото»
-      // оставим как есть для совместимости интерфейса
-    }
+    // "тільки з фото" — у нас завжди є зображення (canvasPNG), прапорець для сумісності інтерфейсу
 
     arr.sort((a,b)=>{
       switch(sortBy.value){
@@ -428,19 +426,18 @@
     btnMore.style.display = (page*pageSize < lastResults.length) ? "inline-block":"none";
   }
 
-  function imgSrcFor(it, idx){ return svgPlaceholder(`${it.brand} ${it.model}`, idx); }
-
   function renderCard(it){
     const el=document.createElement('article'); el.className="card";
+    const img1 = canvasPNG(`${it.brand} ${it.model}`, (it.year+it.price)%6);
     el.innerHTML=`
       <div class="thumb">
-        <img src="${imgSrcFor(it,1)}" alt="${it.brand} ${it.model}" loading="lazy">
+        <img src="${img1}" alt="${it.brand} ${it.model}" loading="lazy">
         <div class="price">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>
       </div>
       <div class="body">
         <div class="title">${it.brand} ${it.model} • ${it.year}</div>
         <div class="meta">${it.city} • ${it.section}</div>
-        <div class="meta">${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.gear}</div>
+        <div class="meta">${(it.mileage/1000|0)} тис.км • ${it.fuel} • ${it.geар||it.gear}</div>
         <div class="row">
           <button class="btn mini" data-act="detail">Детальніше</button>
           <button class="btn mini ghost" data-act="fav">${getFav().includes(it.id)?"У вибраному":"В обране"}</button>
@@ -465,7 +462,7 @@
   $("#btnMore").onclick=renderMore;
   $("#sortBy").onchange=applyFilters;
 
-  // Стартовый поиск
+  // Початковий рендер
   applyFilters();
 
   // ===== ДЕТАЛІ ====================================================================
@@ -479,15 +476,16 @@
       <div class="grow"></div>
       <div class="pill yellow">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>
     `;
+    const imgs=[canvasPNG(`${it.brand} ${it.model}`,0), canvasPNG(`${it.brand} ${it.model}`,1), canvasPNG(`${it.brand} ${it.model}`,2)];
     $("#dGal").innerHTML=`
-      <div class="big"><img src="${imgSrcFor(it,1)}" loading="lazy"></div>
+      <div class="big"><img src="${imgs[0]}" loading="lazy"></div>
       <div class="sm">
-        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgSrcFor(it,2)}" loading="lazy"></div>
-        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgSrcFor(it,3)}" loading="lazy"></div>
+        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[1]}" loading="lazy"></div>
+        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[2]}" loading="lazy"></div>
       </div>`;
     $("#dSpecs").innerHTML=`
       ${spec("Місто",it.city)} ${spec("Розділ",it.section)} ${spec("Пробіг", (it.mileage/1000|0)+" тис.км")} ${spec("Паливо",it.fuel)}
-      ${spec("Коробка",it.gear)} ${spec("Привід",it.drive)} ${spec("Кузов",it.body)} ${spec("Потужність",it.power+" к.с.")}
+      ${spec("Коробка",it.geар||it.gear)} ${spec("Привід",it.drive)} ${spec("Кузов",it.body)} ${spec("Потужність",it.power+" к.с.")}
       ${spec("Колір",it.color)} ${spec("VIN",it.vin||"—")}
     `;
     $("#dDesc").textContent = it.desc;
@@ -529,7 +527,7 @@
     ids.forEach(id=>{
       const it=db.find(x=>x.id===id); if(!it) return;
       d.innerHTML+=`<div class="item"><b>${it.brand} ${it.model} ${it.year}</b><br>
-        ${it.fuel} • ${it.gear} • ${it.drive} • ${it.power} к.с. • Пробіг ${(it.mileage/1000|0)} тис.км<br>
+        ${it.fuel} • ${it.geар||it.gear} • ${it.drive} • ${it.power} к.с. • Пробіг ${(it.mileage/1000|0)} тис.км<br>
         <b>${it.price.toLocaleString('uk-UA')} ${it.currency}</b> — ${it.city}
         <div class="actions" style="margin-top:6px"><button class="btn mini ghost" onclick="toggleCmp('${id}',true)">Прибрати</button></div></div>`;
     });
@@ -582,25 +580,63 @@
         images.push(await fileToDataUrl(files[i]));
       }
     }
-    while(images.length<3) images.push(svgPlaceholder(`${brand} ${model} ${year}`, images.length+1));
+    while(images.length<3) images.push(canvasPNG(`${brand} ${model}`, images.length));
 
     const id=uid();
     const db=getDB();
     if(vin && db.some(x=>x.vin && x.vin===vin)) return alert("Авто з таким VIN вже існує.");
     db.unshift({
       id, city, section, brand, model, year, mileage, fuel, gear, drive, body, power, color,
-      price, currency:"$", created: now, imgKey: brand[0]+model[0], vin, seller:{name:"Приватний продавець", phone}, desc,
-      // для юзерских фото прямо сохраняем base64 в спец-полях
+      price, currency:"$", created: now, vin, seller:{name:"Приватний продавець", phone}, desc,
       userImages: images
     });
     setDB(db);
     ctrl.lastPost=now; setCtrl(ctrl);
-    alert("Оголошення опубліковано.");
-    applyFilters();
+    alert("Оголошення опубліковано."); applyFilters();
   };
   function fileToDataUrl(f){return new Promise(res=>{const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(f);});}
 
-  // ===== Навигация/дроверы ========================================================
+  // ===== ІМПОРТ JSON ===============================================================
+  // Формат: масив об'єктів {brand,model,year,..., images:[dataUrl або url], ...}
+  // (посилання з інших сайтів можуть не віддати картинку через CORS/анти-hotlink — краще dataURL)
+  $("#importJson").addEventListener("change", async (e)=>{
+    const file=e.target.files?.[0]; if(!file) return;
+    try{
+      const text=await file.text(); const arr=JSON.parse(text);
+      if(!Array.isArray(arr)) throw new Error("JSON має бути масивом оголошень");
+      const db=getDB();
+      arr.slice(0,3000).forEach(src=>{
+        const id=uid();
+        const images = (src.images&&src.images.length)? src.images.slice(0,3) : [canvasPNG(`${src.brand||'Авто'} ${src.model||''}`,0),canvasPNG(`${src.brand||'Авто'} ${src.model||''}`,1),canvasPNG(`${src.brand||'Авто'} ${src.model||''}`,2)];
+        db.unshift({
+          id,
+          city: src.city||pick(CITIES),
+          section: src.section||pick(SECTIONS),
+          brand: src.brand||"Brand",
+          model: src.model||"Model",
+          year: +src.year||2020,
+          mileage: +src.mileage||rand(10000,200000),
+          fuel: src.fuel||pick(FUELS),
+          gear: src.gear||pick(GEARS),
+          drive: src.drive||pick(DRIVE),
+          body: src.body||pick(BODIES),
+          power: +src.power||rand(80,250),
+          color: src.color||pick(COLORS),
+          price: +src.price||10000,
+          currency: src.currency||"$",
+          created: Date.now(),
+          vin: src.vin||"",
+          seller: src.seller||{name:"Імпорт", phone:"+380"},
+          desc: src.desc||"Імпортоване оголошення.",
+          userImages: images
+        });
+      });
+      setDB(db); applyFilters(); alert("Імпортовано!");
+    }catch(err){ alert("Помилка імпорту: "+err.message); }
+    e.target.value="";
+  });
+
+  // ===== Навігація/дровери ========================================================
   const favDrawer=$("#favDrawer"), cmpDrawer=$("#cmpDrawer"), chatDrawer=$("#chatDrawer");
   $("#tabFav").onclick=()=>{ renderFav(); favDrawer.classList.add('active'); };
   $("#tabCmp").onclick=()=>{ renderCmp(); cmpDrawer.classList.add('active'); };
@@ -613,51 +649,11 @@
   let regenLock=false;
   $("#regenBtn").onclick=()=>{
     if(regenLock) return;
-    if(confirm(`Згенерувати велику базу (набір синтетичних оголошень)?\nПоточні дані будуть перезаписані.`)){
+    if(confirm(`Згенерувати базу на ~${TARGET_TOTAL} оголошень? Поточні дані будуть перезаписані.`)){
       regenLock=true; setTimeout(()=>regenLock=false, 5000);
       generateDB(); applyFilters();
     }
   };
-
-  // ========= РЕНДЕР ФОТО ДЛЯ КОРИСТУВАЦЬКИХ ОГОЛОШЕНЬ У ДЕТАЛЯХ ===================
-  // Переопределим для детальной: если userImages есть — используем их
-  function imgSrcForDetail(it){
-    if(it.userImages && it.userImages.length) return it.userImages;
-    return [imgSrcFor(it,1),imgSrcFor(it,2),imgSrcFor(it,3)];
-  }
-
-  // Патчим openDetail для userImages:
-  const _openDetail = openDetail;
-  openDetail = function(id){
-    const it=getDB().find(x=>x.id===id); if(!it) return;
-    const d=$("#detail"); d.classList.add('active');
-    $("#dClose").onclick=()=>d.classList.remove('active');
-
-    $("#dHeader").innerHTML=`
-      <div class="title" style="font:700 20px/1.2 'Russo One'">${it.brand} ${it.model} ${it.year}</div>
-      <div class="grow"></div>
-      <div class="pill yellow">${it.price.toLocaleString('uk-UA')} ${it.currency}</div>`;
-    const imgs=imgSrcForDetail(it);
-    $("#dGal").innerHTML=`
-      <div class="big"><img src="${imgs[0]}" loading="lazy"></div>
-      <div class="sm">
-        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[1]}" loading="lazy"></div>
-        <div style="position:relative; padding-top:56%; background:#0b3a8a; border-radius:12px; overflow:hidden"><img src="${imgs[2]}" loading="lazy"></div>
-      </div>`;
-    $("#dSpecs").innerHTML=`
-      ${spec("Місто",it.city)} ${spec("Розділ",it.section)} ${spec("Пробіг",(it.mileage/1000|0)+" тис.км")} ${spec("Паливо",it.fuel)}
-      ${spec("Коробка",it.geар||it.gear)} ${spec("Привід",it.drive)} ${spec("Кузов",it.body)} ${spec("Потужність",it.power+" к.с.")}
-      ${spec("Колір",it.color)} ${spec("VIN",it.vin||"—")}`;
-    $("#dDesc").textContent = it.desc;
-    $("#dSeller").innerHTML=`<div class="avatar">${(it.seller?.name||"П")[0]}</div>
-      <div><div class="h">Продавець</div><div>${it.seller?.name||"Приватний продавець"}</div><div class="small">${it.seller?.phone||""}</div></div>`;
-    $("#dChat").onclick=()=>openChat(it.id);
-    $("#dFav").onclick=()=>toggleFav(it.id,true);
-    $("#dCmp").onclick=()=>toggleCmp(it.id,true);
-  };
-
-  // ===== УТИЛ =====================================================================
-  function spec(k,v){return `<div class="spec"><div class="h">${k}</div>${v}</div>`}
   </script>
 </body>
 </html>
