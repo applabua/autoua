@@ -43,9 +43,6 @@
     .btn{height:48px; border:none; border-radius:14px; background:var(--brand); color:#111; font:700 16px/48px "Russo One"; padding:0 18px; cursor:pointer; box-shadow:0 6px 0 rgba(0,0,0,.35), inset 0 -3px 0 rgba(0,0,0,.18);}    
     .btn:active{transform:translateY(2px); background:var(--brand-press); box-shadow:0 4px 0 rgba(0,0,0,.35), inset 0 -2px 0 rgba(0,0,0,.18);}    
     .btn.ghost{background:rgba(255,255,255,.1); color:#fff;}
-    .btn.white{background:#fff; color:#111; box-shadow:0 6px 0 rgba(0,0,0,.35), inset 0 -3px 0 rgba(0,0,0,.12);}    
-    .btn.white:active{background:#f2f2f2;}
-    .check{display:flex; align-items:center; gap:8px; margin-top:12px; font-size:13px; opacity:.9}
 
     /* Nice Select (desktop) — PORTAL OVERLAY */
     @media (hover:hover){
@@ -53,7 +50,7 @@
       .nice{position:relative}
       .nice-btn{ width:100%; height:46px; border-radius:12px; border:1px solid var(--field-br); background:var(--field-bg); color:#fff; padding:0 38px 0 12px; text-align:left; font-size:14px; font-weight:600; cursor:pointer; }
       .nice-btn:after{content:"▾"; position:absolute; right:12px; top:50%; transform:translateY(-50%); opacity:.8; pointer-events:none}
-      /* .nice-list will be moved to <body> as fixed element */
+      /* moved to body */
       .nice-list{ position:fixed; left:0; top:0; width:240px; background:var(--menu-bg); border:1px solid var(--menu-br); border-radius:12px; padding:6px; box-shadow:0 18px 38px rgba(0,0,0,.6); display:none; max-height:260px; overflow:auto; z-index:2147483647; }
       .nice-item{padding:10px 12px; border-radius:10px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
       .nice-item:hover{background:var(--menu-hover)}
@@ -107,11 +104,7 @@
     <div class="pill yellow" id="tabSearch">Пошук</div>
     <div class="pill" id="tabSell">Додати оголошення</div>
     <div class="grow"></div>
-    <label class="pill" style="cursor:pointer">
-      <input type="file" id="importJson" accept="application/json" style="display:none"> Імпорт JSON
-    </label>
-    <div class="pill" id="importUrlBtn" title="Імпорт з URL">Імпорт URL</div>
-    <div class="pill" id="importCsvBtn" title="Імпорт з CSV">Імпорт CSV</div>
+    <!-- імпорт-кнопки ВИДАЛЕНО -->
   </header>
 
   <main class="container">
@@ -159,7 +152,7 @@
     <section class="grid" id="grid"></section>
     <div class="pager"><button class="btn" id="btnMore" style="display:none">Показати ще</button></div>
 
-    <!-- ДОДАТИ ОГОЛОШЕННЯ (залишаємо як було) -->
+    <!-- ДОДАТИ ОГОЛОШЕННЯ (як БУЛО: секція на сторінці) -->
     <section id="sellPanel" class="panel" style="display:none; margin-top:14px">
       <h3 style="margin:0 0 8px; font:700 18px/1 'Russo One'">Додати оголошення</h3>
       <div class="filters" style="grid-template-columns:repeat(3,1fr)">
@@ -232,14 +225,15 @@
   // Форма "Додати"
   const mapSelectData={sCity:CITIES,sSection:SECTIONS,sFuel:FUELS,sGear:GEARS,sDrive:DRIVE,sBody:BODIES,sColor:COLORS,sBrand:Object.keys(BRANDS)}; Object.keys(mapSelectData).forEach(id=>fillSelect($("#"+id), mapSelectData[id], false)); fillSelect($("#sModel"), [], false); $("#sBrand").addEventListener("change", ()=> fillSelect($("#sModel"), BRANDS[$("#sBrand").value]||[], false));
 
-  // ===== Custom select with portal overlay =====
-  let openDropdownCloser=null;
-  function closeAll(){ if(openDropdownCloser){ openDropdownCloser(); openDropdownCloser=null; } }
+  // ===== Custom select with portal overlay (does NOT close on scroll) =====
+  let activeList=null, activeWrap=null;
+  function closeAll(e){ if(activeList){ if(e && (activeList.contains(e.target) || activeWrap.contains(e.target))) return; activeList.style.display='none'; activeWrap.appendChild(activeList); activeList=null; activeWrap=null; } }
   document.addEventListener('click', closeAll);
-  document.addEventListener('scroll', closeAll, true);
-  window.addEventListener('resize', closeAll);
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeAll(); });
 
-  function enhanceSelect(sel){ if (matchMedia('(hover: none)').matches) return; const wrap=document.createElement('div'); wrap.className='nice'; const btn=document.createElement('button'); btn.type='button'; btn.className='nice-btn'; const list=document.createElement('div'); list.className='nice-list'; const opts=[...sel.options]; function refreshBtn(){ btn.textContent = opts[sel.selectedIndex]?.text || (sel.getAttribute('data-placeholder')||'Виберіть'); } opts.forEach((o, idx)=>{ const it=document.createElement('div'); it.className='nice-item'+(o.selected?' active':''); it.textContent=o.text; it.onclick=(e)=>{ e.stopPropagation(); sel.selectedIndex=idx; refreshBtn(); [...list.children].forEach(c=>c.classList.remove('active')); it.classList.add('active'); closeAll(); sel.dispatchEvent(new Event('change')); }; list.appendChild(it); }); sel.classList.add('nice-hidden'); sel.parentNode.insertBefore(wrap, sel); wrap.appendChild(sel); wrap.appendChild(btn); refreshBtn(); function open(){ closeAll(); const r=btn.getBoundingClientRect(); list.style.left = r.left+'px'; list.style.top = (r.bottom+6)+'px'; list.style.width = r.width+'px'; list.style.display='block'; document.body.appendChild(list); openDropdownCloser=close; } function close(){ list.style.display='none'; wrap.appendChild(list); } btn.onclick=(e)=>{ e.stopPropagation(); if(list.style.display==='block') close(); else open(); }; }
+  function enhanceSelect(sel){ if (matchMedia('(hover: none)').matches) return; const wrap=document.createElement('div'); wrap.className='nice'; const btn=document.createElement('button'); btn.type='button'; btn.className='nice-btn'; const list=document.createElement('div'); list.className='nice-list'; const opts=[...sel.options]; function refreshBtn(){ btn.textContent = opts[sel.selectedIndex]?.text || (sel.getAttribute('data-placeholder')||'Виберіть'); } opts.forEach((o, idx)=>{ const it=document.createElement('div'); it.className='nice-item'+(o.selected?' active':''); it.textContent=o.text; it.onclick=(ev)=>{ ev.stopPropagation(); sel.selectedIndex=idx; refreshBtn(); [...list.children].forEach(c=>c.classList.remove('active')); it.classList.add('active'); closeAll(); sel.dispatchEvent(new Event('change')); }; list.appendChild(it); }); sel.classList.add('nice-hidden'); sel.parentNode.insertBefore(wrap, sel); wrap.appendChild(sel); wrap.appendChild(btn); refreshBtn(); function open(){ closeAll(); const r=btn.getBoundingClientRect(); list.style.left = r.left+'px'; list.style.top = (r.bottom+6)+'px'; list.style.width = r.width+'px'; list.style.display='block'; document.body.appendChild(list); activeList=list; activeWrap=wrap; }
+    btn.onclick=(e)=>{ e.stopPropagation(); if(activeList===list){ closeAll(); } else { open(); } };
+  }
   $$('.select').forEach(enhanceSelect);
 
   // ==== Пошук/рендер
@@ -255,27 +249,19 @@
 
   // ===== Детальна + single-image slider =====
   function spec(k,v){return `<div class=\"spec\"><div class=\"h\">${k}</div>${v}</div>`}
-  function setAttribution(url){ const d=$("#dAttribution"); d.textContent=""; }
+  function setAttribution(url){ /* hidden */ }
   let galIndex=0, galImgs=[]; function renderGallery(title, body){ const gal=$("#dGal"); gal.innerHTML=`<div class=\"big\"><button class=\"navBtn navPrev\" id=\"galPrev\">‹</button><button class=\"navBtn navNext\" id=\"galNext\">›</button></div>`; const big=gal.querySelector('.big'); const url=galImgs[galIndex]; big.appendChild(createImg(url, 'photo', carPNG(title,galIndex,body,galIndex))); $("#galPrev").onclick=()=>{ galIndex=(galIndex-1+galImgs.length)%galImgs.length; renderGallery(title, body); }; $("#galNext").onclick=()=>{ galIndex=(galIndex+1)%galImgs.length; renderGallery(title, body); }; }
   document.addEventListener('keydown', (e)=>{ if($("#detail").classList.contains('active')){ if(e.key==='ArrowLeft') $("#galPrev")?.click(); if(e.key==='ArrowRight') $("#galNext")?.click(); if(e.key==='Escape') $("#dClose")?.click(); }});
 
-  function openDetail(id){ const db=getDB(); const idx=db.findIndex(x=>x.id===id); if(idx<0) return; const it=db[idx]; it.views=(it.views||0)+1; db[idx]=it; setDB(db); const d=$("#detail"); d.classList.add('active'); $("#dClose").onclick=()=>{ d.classList.remove('active'); applyFilters(); }; $("#dHeader").innerHTML=`<div class=\"title\" style=\"font:700 20px/1.2 'Russo One'\">${it.brand} ${it.model} ${it.year}</div><div class=\"pill yellow\">${it.price.toLocaleString('uk-UA')} ${it.currency||"$"}</div><div class=\"pill\" style=\"margin-left:auto\">👁 ${it.views}</div>`; const imgs=(Array.isArray(it.images)&&it.images.length)?it.images:[]; galImgs = (imgs.length? imgs : [carPNG(`${it.brand} ${it.model}`,0,it.body,0), carPNG(`${it.brand} ${it.model}`,1,it.body,1), carPNG(`${it.brand} ${it.model}`,2,it.body,2)]); galIndex=0; renderGallery(`${it.brand} ${it.model}`, it.body); setAttribution(imgs[0]||""); $("#dSpecs").innerHTML= spec("Місто",it.city)+spec("Розділ",it.section)+spec("Пробіг",(it.mileage/1000|0)+" тис.км")+spec("Паливо",it.fuel)+spec("Коробка",it.gear)+spec("Привід",it.drive)+spec("Кузов",it.body)+spec("Потужність",it.power+" к.с.")+spec("Колір",it.color)+spec("VIN",it.vin||"—"); $("#dDesc").textContent = it.desc||""; $("#dSeller").innerHTML=`<div class=\"avatar\">${(it.seller?.name||"П")[0]}</div><div><div class=\"h\">Продавець</div><div>${it.seller?.name||"Продавець"}</div><div class=\"small\">${it.seller?.phone||""}</div></div>`; }
+  function openDetail(id){ const db=getDB(); const idx=db.findIndex(x=>x.id===id); if(idx<0) return; const it=db[idx]; it.views=(it.views||0)+1; db[idx]=it; setDB(db); const d=$("#detail"); d.classList.add('active'); $("#dClose").onclick=()=>{ d.classList.remove('active'); applyFilters(); }; $("#dHeader").innerHTML=`<div class=\"title\" style=\"font:700 20px/1.2 'Russo One'\">${it.brand} ${it.model} ${it.year}</div><div class=\"pill yellow\">${it.price.toLocaleString('uk-UA')} ${it.currency||"$"}</div><div class=\"pill\" style=\"margin-left:auto\">👁 ${it.views}</div>`; const imgs=(Array.isArray(it.images)&&it.images.length)?it.images:[]; galImgs = (imgs.length? imgs : [carPNG(`${it.brand} ${it.model}`,0,it.body,0), carPNG(`${it.brand} ${it.model}`,1,it.body,1), carPNG(`${it.brand} ${it.model}`,2,it.body,2)]); galIndex=0; renderGallery(`${it.brand} ${it.model}`, it.body); setAttribution(imgs[0]||""); $("#dSpecs").innerHTML= spec("Місто",it.city)+spec("Розділ",it.section)+spec("Пробіг",(it.mileage/1000|0)+" тис.км")+spec("Паливо",it.fuel)+spec("Коробка",it.geар||it.gear)+spec("Привід",it.drive)+spec("Кузов",it.body)+spec("Потужність",it.power+" к.с.")+spec("Колір",it.color)+spec("VIN",it.vin||"—"); $("#dDesc").textContent = it.desc||""; $("#dSeller").innerHTML=`<div class=\"avatar\">${(it.seller?.name||"П")[0]}</div><div><div class=\"h\">Продавець</div><div>${it.seller?.name||"Продавець"}</div><div class=\"small\">${it.seller?.phone||""}</div></div>`; }
 
-  // Публікація (без змін)
+  // Публікація (як було: без модалки, просто секція на сторінці)
   $("#sSave").onclick=()=>{ const ctrl=getCtrl(); const now=Date.now(); if(ctrl.lastPost && now-ctrl.lastPost<60000){ alert("Публікувати можна не частіше 1 разу на 60 сек."); return; } const city=$("#sCity").value, section=$("#sSection").value, brand=$("#sBrand").value, model=$("#sModel").value; if(!city||!section||!brand||!model) return alert("Заповніть місто/розділ/марку/модель."); const year=+(($("#sYear").value||0)); if(!(year>=1990 && year<=2025)) return alert("Рік 1990–2025."); const price=+(($("#sPrice").value||0)); if(!(price>=500 && price<=500000)) return alert("Ціна $500–500000."); const phone=$("#sPhone").value.trim(); if(!/^\+?\d[\d\s\-]{8,}$/.test(phone)) return alert("Телефон некоректний."); const vin=$("#sVIN").value.trim(); if(vin && !/^[A-HJ-NPR-Z0-9]{8,17}$/i.test(vin)) return alert("VIN 8–17 символів."); const desc=$("#sDesc").value.trim(); if(desc.length<20) return alert("Опис ≥ 20 символів."); const mileage=+(($("#sMileage").value||0)), fuel=$("#sFuel").value, gear=$("#sGear").value, drive=$("#sDrive").value, body=$("#sBody").value, color=$("#sColor").value, power=+(($("#sPower").value||100)); const db=getDB(); if(vin && db.some(x=>x.vin && x.vin===vin)) return alert("Авто з таким VIN вже існує."); db.unshift({ id:uid(), city, section, brand, model, year, mileage, fuel, gear, drive, body, power, color, price, currency:"$", created: now, vin, seller:{name:"Приватний продавець", phone}, desc, views: rand(5,25), images:[] }); setDB(db); ctrl.lastPost=now; setCtrl(ctrl); alert("Оголошення опубліковано."); applyFilters(); };
 
-  // Вкладки
+  // Вкладки (як було)
   $("#tabSearch").onclick=()=>{ $("#sellPanel").style.display="none"; window.scrollTo({top:0, behavior:"smooth"}); };
   $("#tabSell").onclick=()=>{ $("#sellPanel").style.display="block"; $("#sellPanel").scrollIntoView({behavior:'smooth', block:'start'}); };
 
-  // Імпорт (залишено як у вас)
-  $("#importJson").addEventListener("change", async (e)=>{ const f=e.target.files?.[0]; if(!f) return; try{ const arr=JSON.parse(await f.text()); doImportArray(arr); alert("Імпортовано!"); }catch(err){ alert("Помилка імпорту: "+err.message); } e.target.value=""; });
-  $("#importUrlBtn").addEventListener("click", async ()=>{ const url=prompt("Вставте URL до JSON (GitHub Raw / Google Apps Script / ваш сервер):"); if(!url) return; try{ const r=await fetch(url, {mode:"cors"}); if(!r.ok) throw new Error("HTTP "+r.status); const arr=await r.json(); doImportArray(arr); alert("Імпортовано з URL!"); }catch(err){ alert("Не вдалося завантажити. Помилка: "+err.message); } });
-  $("#importCsvBtn").addEventListener("click", async ()=>{ const txt=prompt("Вставте CSV з заголовками: city,section,brand,model,year,price,images,...\nУ колонці images — кілька URL через | "); if(!txt) return; try{ const arr = parseCSVToObjects(txt.trim()); doImportArray(arr); alert("Імпортовано з CSV!"); } catch(err){ alert("Помилка CSV: "+err.message); } });
-
-  function parseCSVToObjects(text){ const rows = []; let i=0, field='', row=[], inQuotes=false; const pushField=()=>{ row.push(field); field=''; }; while(i<text.length){ const ch=text[i]; if(inQuotes){ if(ch==='"'){ if(text[i+1]==='"'){ field+='"'; i++; } else { inQuotes=false; } } else { field+=ch; } }else{ if(ch==='"'){ inQuotes=true; } else if(ch===','){ pushField(); } else if(ch==='\n' || ch==='\r'){ if(ch==='\r' && text[i+1]==='\n') i++; pushField(); if(row.length>1 || row[0]!=="") rows.push(row); row=[]; } else { field+=ch; } } i++; } pushField(); if(row.length>1 || row[0]!=="") rows.push(row); if(rows.length===0) return []; const headers = rows.shift().map(h=>h.trim()); return rows.map(r=>{ const obj={}; headers.forEach((h,idx)=>{ obj[h] = (r[idx]||'').trim(); }); if(obj.year) obj.year=+obj.year; if(obj.price) obj.price=+obj.price; if(obj.power) obj.power=+obj.power; if(obj.mileage) obj.mileage=+obj.mileage; obj.created = obj.created? +obj.created : Date.now(); obj.images = obj.images? obj.images.split('|').map(s=>s.trim()).filter(Boolean) : []; obj.seller = { name: obj.seller_name||obj.seller||"Імпорт", phone: obj.seller_phone||"+380" }; return obj; }); }
-
-  function doImportArray(arr){ if(!Array.isArray(arr)) throw new Error("JSON/CSV має бути масивом"); const db=getDB(); arr.forEach(o=>{ db.push({ id:uid(), city:o.city||"Київ", section:o.section||"Легкові", brand:o.brand||"Brand", model:o.model||"Model", year:+o.year||2020, mileage:+o.mileage||rand(10000,200000), fuel:o.fuel||"Бензин", gear:o.gear||"Автомат", drive:o.drive||"FWD", body:o.body||"Седан", power:+o.power||120, color:o.color||"Сірий", price:+o.price||10000, currency:o.currency||"$", created:+o.created||Date.now(), vin:o.vin||"", seller:o.seller||{name:"Імпорт", phone:"+380"}, desc:o.desc||"Імпортоване оголошення.", images:Array.isArray(o.images)?o.images.slice(0,3):[], views:+o.views||rand(150,500) }); }); setDB(db); applyFilters(); }
   </script>
 </body>
 </html>
